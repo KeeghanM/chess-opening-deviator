@@ -7,10 +7,11 @@
 	let games = []
 	let blackSide = false
 	let openingPgn = ''
+	let minMoves = 3
 
 	async function getGames() {
 		if (username.length < 3) return
-		let url = `https://lichess.org/api/games/user/${username}?max=10&moves=true&tags=true&perfType=blitz,rapid,classical,correspondence`
+		let url = `https://lichess.org/api/games/user/${username}?max=500&moves=true&tags=true&perfType=blitz,rapid,classical,correspondence`
 
 		const response = await fetch(url)
 		if (response.status == 404) {
@@ -39,6 +40,37 @@
 		let parsedOpening = parse(openingPgn)
 		console.log(parsedOpening)
 		console.log(games)
+
+		let compareSide = blackSide ? 'Black' : 'White'
+		let stats = []
+		for (let game of games) {
+			if (game.playerSide == compareSide) {
+				// First ensure the minimum moves match
+				let match = true
+				for (let i = 0; i < minMoves * 2; i++) {
+					match =
+						game[0]?.moves[i]?.notation?.notation == parsedOpening[0]?.moves[i]?.notation?.notation
+				}
+				if (!match) continue // Move to the next game as this one isn't valid
+
+				stats.gameCount++
+				for (let i = 0; i < parsedOpening[0].moves.length; i++) {
+					let gameMove = game[0].moves[i].notation.notation
+					let modelMove = parsedOpening[0].moves[i].notation.notation
+					let whosMove = game[0].moves[i].moveNumber == null ? 'Black' : 'White'
+					if (gameMove != modelMove) {
+						stats.push({
+							moveNumber: Math.ceil(i / 2),
+							who: whosMove == game.playerSide ? 'Player' : 'Opponent',
+							should: modelMove,
+							did: gameMove
+						})
+						break
+					}
+				}
+			}
+		}
+		console.log(stats)
 	}
 </script>
 
@@ -51,6 +83,7 @@
 		<div class="-space-between flex flex-row items-center gap-4">
 			<label for="username" class="font-bold">Username</label>
 			<input
+				required
 				id="username"
 				name="username"
 				type="text"
@@ -58,11 +91,10 @@
 				bind:value={username}
 			/>
 		</div>
-		<span>{message}</span>
-
 		<div class="-space-between flex flex-row items-center gap-4">
 			<label for="pgnCompare" class="font-bold">Opening PGN</label>
 			<input
+				required
 				type="text"
 				name="pgnCompare"
 				id="pgnCompare"
@@ -81,6 +113,7 @@
 			class="rounded-lg bg-orange-600 px-4 py-2 text-slate-800 hover:bg-orange-500 hover:shadow-lg"
 			on:click={getGames}>Search</button
 		>
+		<span>{message}</span>
 	</div>
 </section>
 
