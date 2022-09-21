@@ -6,7 +6,6 @@ const config = {
 	// Consult https://github.com/sveltejs/svelte-preprocess
 	// for more information about preprocessors
 	preprocess: preprocess(),
-	content: ['./src/**/*.{html,js,svelte,ts}'],
 	kit: {
 		adapter: adapter()
 	}
