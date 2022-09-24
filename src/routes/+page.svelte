@@ -65,6 +65,7 @@
 								gameMove = currentGameMove
 								who = whosMove == game.playerSide ? 'Player' : 'Opponent'
 							}
+							console.log({ chapter, game })
 							break
 						}
 					}
@@ -154,32 +155,11 @@
 				})
 			})
 
-		let movesList = wrongPlayerMoves.reduce((result, current) => {
-			let key = current.played + current.should + current.moveNumber.toString()
-			if (!result[key]) {
-				result[key] = {
-					played: current.played,
-					should: current.should,
-					moveNumber: current.moveNumber,
-					count: 1
-				}
-			} else {
-				result[key].count += 1
-			}
-			return result
-		}, [])
-		// .sort((a, b) => {
-		// 	return b.count - a.count
-		// })
+		wrongPlayerMoves = wrongPlayerMoves.sort((a, b) => {
+			if (a.moveNumber == b.moveNumber) return a.played.localeCompare(b.played)
 
-		wrongPlayerMoves = []
-		console.log(movesList)
-		movesList.forEach((x) => {
-			console.log('IN')
-			wrongPlayerMoves.push(x)
+			return a.moveNumber - b.moveNumber
 		})
-		wrongPlayerMoves = wrongPlayerMoves
-
 		results = true
 	}
 </script>
