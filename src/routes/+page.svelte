@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 	// 1D1HCJEb
 	import { parse } from '@mliebelt/pgn-parser'
 
@@ -35,6 +35,7 @@
 			if (game.playerSide == compareSide) {
 				// First ensure the game matches at least the minimum moves in one
 				// of the lines in the repertoire
+				// TODO: Handle multiple different openings - start with game and go through variations/chapters
 				let match = true
 				for (let chapter of repertoire) {
 					for (let i = 0; i <= minMoves * 2; i++) {
@@ -52,24 +53,38 @@
 				let gameMove = ''
 				let who = ''
 
-				for (let chapter of repertoire) {
-					for (let i = 0; i < Math.min(chapter[0].moves.length, game[0].moves.length); i++) {
-						let currentGameMove = game[0].moves[i].notation.notation
-						let modelMove = chapter[0].moves[i].notation.notation
-						let whosMove = game[0].moves[i].moveNumber == null ? 'Black' : 'White'
-						let currentMoveNumber = Math.ceil(i / 2)
-						if (currentGameMove != modelMove) {
-							if (currentMoveNumber > moveNumber) {
-								moveNumber = currentMoveNumber
-								repertoireMove = modelMove
-								gameMove = currentGameMove
-								who = whosMove == game.playerSide ? 'Player' : 'Opponent'
-							}
-							console.log({ chapter, game })
-							break
-						}
+				// for (let chapter of repertoire) {
+				// 	for (let i = 0; i < Math.min(chapter[0].moves.length, game[0].moves.length); i++) {
+				// 		let currentGameMove = game[0].moves[i].notation.notation
+				// 		let modelMove = chapter[0].moves[i].notation.notation
+				// 		let whosMove = game[0].moves[i].moveNumber == null ? 'Black' : 'White'
+				// 		let currentMoveNumber = Math.ceil(i / 2)
+				// 		if (currentGameMove != modelMove) {
+				// 			if (currentMoveNumber > moveNumber) {
+				// 				moveNumber = currentMoveNumber
+				// 				repertoireMove = modelMove
+				// 				gameMove = currentGameMove
+				// 				who = whosMove == game.playerSide ? 'Player' : 'Opponent'
+				// 			}
+				// 			break
+				// 		}
+				// 	}
+				// }
+				for (let i = 0; i < game[0].moves.length; i++) {
+					let gMove = game[0].moves[i]
+
+					let possibleMoves = []
+					let moveNumber = gMove.moveNumber
+						? gMove.moveNumber
+						: game[0].moves[i - 1].moveNumber + 0.5
+					for (let chapter of repertoire) {
+						getMoves(moveNumber, possibleMoves, chapter[0].moves)
+					}
+					console.log({ moveNumber, played: gMove.notation.notation, possibleMoves })
+					if (!possibleMoves.includes(gMove.notation.notation)) {
 					}
 				}
+
 				analysedGames.push({
 					moveNumber,
 					repertoireMove,
@@ -82,6 +97,21 @@
 		stats.analysedGames = analysedGames
 
 		generateResults()
+	}
+
+	function getMoves(gMoveNumber, possibleMoves, moveList) {
+		for (let i = 0; i < moveList.length; i++) {
+			let rMove = moveList[i]
+			let rMoveNumber = rMove.moveNumber ? rMove.moveNumber : moveList[i - 1].moveNumber + 0.5
+			if (rMoveNumber == gMoveNumber) {
+				possibleMoves.push(rMove.notation.notation)
+			}
+			if (rMove.variations) {
+				for (let variant of rMove.variations) {
+					getMoves(gMoveNumber, possibleMoves, variant)
+				}
+			}
+		}
 	}
 
 	async function fetchRepertoire() {
