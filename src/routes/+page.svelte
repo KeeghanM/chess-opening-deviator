@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	// 1D1HCJEb
 	import { parse } from '@mliebelt/pgn-parser'
 
@@ -7,9 +7,20 @@
 	let blackSide = false
 	let studyId = ''
 	let minMoves = 1
+	let stats = {
+		gameCount: 0,
+		analysedGames: []
+	}
+	let results = false
+	let wrongPlayerMoves = []
+
+	let playerDeviations = 0
+	let oppDeviations = 0
 
 	async function getGames() {
-		if (username.length < 3) return
+		if (username.length < 3 || studyId.length < 3) return
+		results = false
+		wrongPlayerMoves = []
 
 		let games = await fetchGames()
 		if (!games) return
@@ -18,25 +29,21 @@
 		if (!repertoire) return
 
 		let compareSide = blackSide ? 'Black' : 'White'
-		let stats = []
+		let analysedGames = []
 
 		for (let game of games) {
 			if (game.playerSide == compareSide) {
 				// First ensure the game matches at least the minimum moves in one
 				// of the lines in the repertoire
 				let match = true
-				// console.log({ 'New Game': game[0].tags.Site })
 				for (let chapter of repertoire) {
-					// console.log('New Chapter')
 					for (let i = 0; i <= minMoves * 2; i++) {
 						let gameMove = game[0]?.moves[i]?.notation?.notation
 						let repertoireMove = chapter[0]?.moves[i]?.notation?.notation
 
 						match = gameMove == repertoireMove
-						// console.log({ gameMove, repertoireMove, match })
 					}
 				}
-				// console.log({ match })
 
 				if (!match) continue // Move to the next game as this one isn't valid
 
@@ -62,16 +69,18 @@
 						}
 					}
 				}
-				stats.push({
+				analysedGames.push({
 					moveNumber,
 					repertoireMove,
 					gameMove,
 					who,
-					game
+					gameUrl: game[0].tags.Site
 				})
 			}
 		}
-		console.log(stats)
+		stats.analysedGames = analysedGames
+
+		generateResults()
 	}
 
 	async function fetchRepertoire() {
@@ -102,7 +111,7 @@
 	}
 
 	async function fetchGames() {
-		let url = `https://lichess.org/api/games/user/${username}?max=50&moves=true&tags=true&perfType=blitz,rapid,classical,correspondence`
+		let url = `https://lichess.org/api/games/user/${username}?max=100&moves=true&tags=true&perfType=blitz,rapid,classical,correspondence`
 
 		const response = await fetch(url)
 		if (response.status == 404) {
@@ -128,8 +137,50 @@
 
 			return game
 		})
-
+		stats.gameCount = games.length
 		return games
+	}
+
+	function generateResults() {
+		playerDeviations = stats.analysedGames.filter((game) => game.who == 'Player').length
+		oppDeviations = stats.analysedGames.filter((game) => game.who == 'Opponent').length
+		stats.analysedGames
+			.filter((game) => game.who == 'Player')
+			.forEach((game) => {
+				wrongPlayerMoves.push({
+					played: game.gameMove,
+					should: game.repertoireMove,
+					moveNumber: game.moveNumber
+				})
+			})
+
+		let movesList = wrongPlayerMoves.reduce((result, current) => {
+			let key = current.played + current.should + current.moveNumber.toString()
+			if (!result[key]) {
+				result[key] = {
+					played: current.played,
+					should: current.should,
+					moveNumber: current.moveNumber,
+					count: 1
+				}
+			} else {
+				result[key].count += 1
+			}
+			return result
+		}, [])
+		// .sort((a, b) => {
+		// 	return b.count - a.count
+		// })
+
+		wrongPlayerMoves = []
+		console.log(movesList)
+		movesList.forEach((x) => {
+			console.log('IN')
+			wrongPlayerMoves.push(x)
+		})
+		wrongPlayerMoves = wrongPlayerMoves
+
+		results = true
 	}
 </script>
 
@@ -172,11 +223,45 @@
 			class="rounded-lg bg-orange-600 px-4 py-2 text-slate-800 hover:bg-orange-500 hover:shadow-lg"
 			on:click={getGames}>Search</button
 		>
-		<span>{message}</span>
+		<span
+			>{message}{#if message.length > 0}
+				<div class="loader" />
+			{/if}</span
+		>
 	</div>
+	{#if results == true}
+		<p>Total Games Loaded from LiChess: {stats.gameCount}</p>
+		<p>Games played within repertoire: {stats.analysedGames.length}</p>
+		<p>Number of times player deviated: {playerDeviations}</p>
+		<p>Number of times opponent deviated: {oppDeviations}</p>
+		<div class="p-12">
+			{#each wrongPlayerMoves as move, i}
+				<p>
+					On move {move.moveNumber} you played {move.played} but should've played {move.should}
+				</p>
+			{/each}
+		</div>
+	{/if}
 </section>
 
 <style>
+	.loader {
+		border: 16px solid #f3f3f3; /* Light grey */
+		border-top: 16px solid #3498db; /* Blue */
+		border-radius: 50%;
+		width: 80px;
+		height: 80px;
+		animation: spin 2s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
 	/* The switch - the box around the slider */
 	.switch {
 		position: relative;
