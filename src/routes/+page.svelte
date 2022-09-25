@@ -197,6 +197,7 @@
 			return a.moveNumber - b.moveNumber
 		})
 
+		console.log(JSON.stringify(wrongPlayerMoves))
 		results = true
 	}
 
