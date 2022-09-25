@@ -6,7 +6,7 @@
 	let message = ''
 	let blackSide = false
 	let studyId = ''
-	let minMoves = 1
+	let minMoves = 3
 	let stats = {
 		gameCount: 0,
 		analysedGames: []
@@ -35,14 +35,14 @@
 			if (game.playerSide == compareSide) {
 				// First ensure the game matches at least the minimum moves in one
 				// of the lines in the repertoire
-				// TODO: Handle multiple different openings - start with game and go through variations/chapters
-				let match = true
-				for (let chapter of repertoire) {
-					for (let i = 0; i <= minMoves * 2; i++) {
-						let gameMove = game[0]?.moves[i]?.notation?.notation
-						let repertoireMove = chapter[0]?.moves[i]?.notation?.notation
-
-						match = gameMove == repertoireMove
+				let match = false
+				for (let line of repertoire) {
+					if (line.length > 0) {
+						for (let i = 0; i <= minMoves; i++) {
+							match = game.line[i].notation == line[i].notation
+							if (!match) break
+						}
+						if (match) break
 					}
 				}
 
@@ -52,36 +52,25 @@
 				let repertoireMove = ''
 				let gameMove = ''
 				let who = ''
+				let correctLine = []
 
-				// for (let chapter of repertoire) {
-				// 	for (let i = 0; i < Math.min(chapter[0].moves.length, game[0].moves.length); i++) {
-				// 		let currentGameMove = game[0].moves[i].notation.notation
-				// 		let modelMove = chapter[0].moves[i].notation.notation
-				// 		let whosMove = game[0].moves[i].moveNumber == null ? 'Black' : 'White'
-				// 		let currentMoveNumber = Math.ceil(i / 2)
-				// 		if (currentGameMove != modelMove) {
-				// 			if (currentMoveNumber > moveNumber) {
-				// 				moveNumber = currentMoveNumber
-				// 				repertoireMove = modelMove
-				// 				gameMove = currentGameMove
-				// 				who = whosMove == game.playerSide ? 'Player' : 'Opponent'
-				// 			}
-				// 			break
-				// 		}
-				// 	}
-				// }
-				for (let i = 0; i < game[0].moves.length; i++) {
-					let gMove = game[0].moves[i]
+				for (let rLine of repertoire) {
+					for (let i = 0; i < Math.min(rLine.length, game.line.length); i++) {
+						let currentGameMove = game.line[i].notation
+						let modelMove = rLine[i].notation
+						let currentMoveNumber = Math.ceil(i / 2)
+						let whosMove = game.line[i].moveNumber % 1 == 0 ? 'White' : 'Black'
 
-					let possibleMoves = []
-					let moveNumber = gMove.moveNumber
-						? gMove.moveNumber
-						: game[0].moves[i - 1].moveNumber + 0.5
-					for (let chapter of repertoire) {
-						getMoves(moveNumber, possibleMoves, chapter[0].moves)
-					}
-					console.log({ moveNumber, played: gMove.notation.notation, possibleMoves })
-					if (!possibleMoves.includes(gMove.notation.notation)) {
+						if (currentGameMove != modelMove) {
+							if (currentMoveNumber > moveNumber) {
+								moveNumber = currentMoveNumber
+								repertoireMove = modelMove
+								gameMove = currentGameMove
+								who = whosMove == game.playerSide ? 'Player' : 'Opponent'
+								correctLine = rLine
+							}
+							break
+						}
 					}
 				}
 
@@ -90,28 +79,15 @@
 					repertoireMove,
 					gameMove,
 					who,
-					gameUrl: game[0].tags.Site
+					gameUrl: game.gameLink,
+					result: game.result,
+					correctLine
 				})
 			}
 		}
 		stats.analysedGames = analysedGames
 
 		generateResults()
-	}
-
-	function getMoves(gMoveNumber, possibleMoves, moveList) {
-		for (let i = 0; i < moveList.length; i++) {
-			let rMove = moveList[i]
-			let rMoveNumber = rMove.moveNumber ? rMove.moveNumber : moveList[i - 1].moveNumber + 0.5
-			if (rMoveNumber == gMoveNumber) {
-				possibleMoves.push(rMove.notation.notation)
-			}
-			if (rMove.variations) {
-				for (let variant of rMove.variations) {
-					getMoves(gMoveNumber, possibleMoves, variant)
-				}
-			}
-		}
 	}
 
 	async function fetchRepertoire() {
@@ -134,15 +110,48 @@
 
 		message = ''
 
-		let lines = repertoire.split('\n\n\n')
-		lines.pop()
-		lines = lines.map((x) => parse(x))
+		let chapters = repertoire.split('\n\n\n')
+		chapters.pop()
+		chapters = chapters.map((x) => parse(x))
 
+		let lines = []
+		for (let chapter of chapters) {
+			extractMoves(chapter[0].moves, [], lines)
+		}
 		return lines
 	}
 
+	function extractMoves(moveList, lineSoFar, outputArr, game) {
+		let lineCopy = JSON.parse(JSON.stringify(lineSoFar))
+		for (let i = 0; i < moveList.length; i++) {
+			let move = moveList[i]
+			if (move.variations) {
+				for (let variant of move.variations) {
+					let variantLine = JSON.parse(JSON.stringify(lineCopy))
+					extractMoves(variant, variantLine, outputArr)
+				}
+			}
+			let moveNumber = move.turn == 'w' ? move.moveNumber : moveList[i - 1].moveNumber + 0.5
+			let newMove = { moveNumber, notation: move.notation.notation }
+			lineCopy.push(newMove)
+		}
+
+		if (game) {
+			let gameData = {
+				playerSide: game.playerSide,
+				line: lineCopy,
+				gameLink: game[0].tags.Site,
+				result: game[0].tags.Result
+			}
+			outputArr.push(gameData)
+		} else {
+			outputArr.push(lineCopy)
+		}
+	}
+
 	async function fetchGames() {
-		let url = `https://lichess.org/api/games/user/${username}?max=100&moves=true&tags=true&perfType=blitz,rapid,classical,correspondence`
+		let color = blackSide ? 'black' : 'white'
+		let url = `https://lichess.org/api/games/user/${username}?max=1000&moves=true&tags=true&perfType=blitz,rapid,classical,correspondence&color=${color}`
 
 		const response = await fetch(url)
 		if (response.status == 404) {
@@ -165,32 +174,47 @@
 		games = games.map((x) => {
 			let game = parse(x)
 			game.playerSide = game[0].tags.Black == username ? 'Black' : 'White'
-
 			return game
 		})
+
+		let gamesList = []
+		for (let game of games) {
+			extractMoves(game[0].moves, [], gamesList, game)
+		}
+
 		stats.gameCount = games.length
-		return games
+		return gamesList
 	}
 
 	function generateResults() {
 		playerDeviations = stats.analysedGames.filter((game) => game.who == 'Player').length
 		oppDeviations = stats.analysedGames.filter((game) => game.who == 'Opponent').length
-		stats.analysedGames
-			.filter((game) => game.who == 'Player')
-			.forEach((game) => {
-				wrongPlayerMoves.push({
-					played: game.gameMove,
-					should: game.repertoireMove,
-					moveNumber: game.moveNumber
-				})
-			})
+		wrongPlayerMoves = stats.analysedGames.filter((game) => game.who == 'Player')
 
 		wrongPlayerMoves = wrongPlayerMoves.sort((a, b) => {
-			if (a.moveNumber == b.moveNumber) return a.played.localeCompare(b.played)
+			if (a.moveNumber == b.moveNumber) return a.gameMove.localeCompare(b.gameMove)
 
 			return a.moveNumber - b.moveNumber
 		})
+
 		results = true
+	}
+
+	function showLine(i) {
+		console.log({
+			game: wrongPlayerMoves[i].gameUrl,
+			move: wrongPlayerMoves[i].moveNumber,
+			youPlayed: wrongPlayerMoves[i].gameMove,
+			shouldPlay: wrongPlayerMoves[i].repertoireMove,
+			fullLine: wrongPlayerMoves[i].correctLine
+		})
+		// moveNumber,
+		// repertoireMove,
+		// gameMove,
+		// who,
+		// gameUrl: game.gameLink,
+		// result: game.result,
+		// correctLine
 	}
 </script>
 
@@ -247,7 +271,11 @@
 		<div class="p-12">
 			{#each wrongPlayerMoves as move, i}
 				<p>
-					On move {move.moveNumber} you played {move.played} but should've played {move.should}
+					On move {move.moveNumber} you played {move.gameMove} but should've played {move.repertoireMove}
+					<button
+						class="rounded-lg bg-orange-600 px-4 py-2 text-slate-800 hover:bg-orange-500 hover:shadow-lg"
+						on:click={() => showLine(i)}>Show Line</button
+					>
 				</p>
 			{/each}
 		</div>
