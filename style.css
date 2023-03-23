@@ -1,73 +1,86 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;400;800&display=swap");
 :root {
-    --col-navy: hsl(218, 33%, 25%);
-    --col-white: hsl(0, 0%, 100%);
-    --col-grey: hsl(0, 0%, 70%);
-    --col-gold: hsl(46, 100%, 50%);
+  --col-navy: hsl(218, 33%, 25%);
+  --col-white: hsl(0, 0%, 100%);
+  --col-grey: hsl(0, 0%, 70%);
+  --col-gold: hsl(46, 100%, 50%);
 }
 
 * {
-    font-family: 'Montserrat', sans-serif;
-    color: inherit;
+  font-family: "Montserrat", sans-serif;
+  color: inherit;
 }
 a {
-    text-decoration: none;
+  text-decoration: none;
 }
 ul {
-    list-style: none;
+  list-style: none;
 }
-h1,h2,h3,h4 {
-    margin: 0;
-    padding: 0;
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  padding: 0;
+}
+#loading {
+    display: none;
 }
 
 nav {
-    background-color: var(--col-navy);
-    color: var(--col-white);
-    padding: 2rem 6rem;
+  background-color: var(--col-navy);
+  color: var(--col-white);
+  padding: 2rem 6rem;
 }
 nav ul {
-    display: flex;
-    gap: 2rem;
-    align-items: center;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
 }
-nav ul li:first-child{
-    font-size: 2rem;
-    padding-right: 2rem;
-    color: var(--col-gold);
-    font-weight: bold;
+nav ul li:first-child {
+  font-size: 2rem;
+  padding-right: 2rem;
+  color: var(--col-gold);
+  font-weight: bold;
 }
-
 section {
+  padding: 2rem 6rem;
+}
+@media (min-width: 1000px) {
+  section {
     display: flex;
     justify-content: space-between;
-    padding: 2rem 6rem;
+  }
+  main {
+    min-width: 50vw;
+  }
+  .mobile {display: none;}
 }
 
 label {
-    margin-right: 1rem;
+  margin-right: 1rem;
 }
 label:first-child {
-    font-weight: bold;
+  font-weight: bold;
 }
 fieldset {
-    border: none;
+  border: none;
 }
 
 button {
-    padding: 0.6rem 1.2rem
+  padding: 0.6rem 1.2rem;
 }
 button:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
-button[type=submit]{
-    background: var(--col-gold);
+button[type="submit"] {
+  background: var(--col-gold);
 }
-button[type=reset]{
-    background: var(--col-grey);
+button[type="reset"] {
+  background: var(--col-grey);
 }
 
 aside li {
-    padding: 0.6rem 1.2rem;
+  padding: 0.6rem 1.2rem;
 }
