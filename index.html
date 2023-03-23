@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="normalize.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="index.js" defer></script>
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li><a href="index.html">Opening DeviatOr</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <section>
+      <main>
+        <h1>Chess Opening Deviation Analysis</h1>
+        <a href="#instructions" class="mobile">View Instructions</a>
+        <form id="opening-form">
+          <fieldset>
+            <label for="username">LiChess Username</label
+            ><input type="text" id="username" name="username" />
+          </fieldset>
+          <fieldset>
+            <label for="study-id">Study ID</label
+            ><input type="text" id="study-id" name="study-id" />
+          </fieldset>
+          <fieldset>
+            <label for="colour">Colour</label>
+            <input type="radio" id="white" name="colour" />
+            <label for="white">White</label>
+            <input type="radio" id="black" name="colour" />
+            <label for="black">Black</label>
+          </fieldset>
+          <fieldset>
+            <label for="min-date">Games Since</label
+            ><input type="date" id="min-date" name="min-date" />
+          </fieldset>
+          <fieldset>
+            <label for="min-moves">Move Threshold</label
+            ><input type="number" id="min-moves" name="min-moves" />
+          </fieldset>
+          <fieldset>
+            <button type="submit">Run Analysis</button>
+            <button type="reset">Reset</button>
+          </fieldset>
+        </form>
+      </main>
+      <aside id="instructions">
+        <h2>Instructions to use</h2>
+        <ul>
+          <li>
+            <h3>Enter LiChess Username</h3>
+            <p>
+              The account that you want to analyse the openings of. Please note
+              that this is case sensitive.
+            </p>
+          </li>
+          <li>
+            <h3>Enter LiChess Study ID</h3>
+            <p></p>
+          </li>
+          <li>
+            <h3>Select Colour</h3>
+            <p></p>
+          </li>
+          <li>
+            <h3>Choose a timeframe</h3>
+            <p></p>
+          </li>
+          <li>
+            <h3>Select minimum move threshold</h3>
+            <p></p>
+          </li>
+          <li>
+            <h3>Run analysis</h3>
+            <p></p>
+          </li>
+        </ul>
+      </aside>
+    </section>
+  </body>
+</html>
