@@ -13,16 +13,6 @@ let loadedLines = 0
 let games = []
 let lines = []
 
-let testPGN =
-  '[White "Keeghan"] 1. e4 e5 2. Nf3 Nc6 (2... Nf6 3. d4 Nxe4 (3... exd4 4. e5) 4. Nxe5) (2... d6 3. d4) 3. d4'
-let PGN = parse(testPGN)
-for (let line of PGN) {
-  recursiveParse([], line.moves, line.tags, lines)
-}
-for (let line of lines) {
-  prettyPrintLine(line)
-}
-
 openingForm.addEventListener("submit", async (e) => {
   e.preventDefault()
   formData = new FormData(openingForm)
@@ -82,15 +72,12 @@ async function streamLines() {
 }
 
 function recursiveParse(lineSoFar, newMoves, tags, outputArray) {
-  let lineArray = JSON.parse(JSON.stringify(lineSoFar))
+  let lineArray = JSON.parse(JSON.stringify(lineSoFar)) // Deep Clone the array
   for (let move of newMoves) {
-    // if (move.variations.length > 0) {
     for (let variation of move.variations) {
       recursiveParse(lineArray, variation, tags, outputArray)
     }
-    // } else {
     lineArray.push(move)
-    // }
   }
   let line = {
     tags,
@@ -100,12 +87,10 @@ function recursiveParse(lineSoFar, newMoves, tags, outputArray) {
 }
 
 function prettyPrintLine(line) {
-  // console.log(line)
   let string = ""
   for (let move of line.moves) {
     string +=
-      (move.turn == "w" ? move.moveNumber : "") +
-      " " +
+      (move.turn == "w" ? move.moveNumber + ". " : "") +
       move.notation.notation +
       " "
   }
