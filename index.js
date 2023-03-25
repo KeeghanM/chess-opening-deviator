@@ -27,8 +27,9 @@ openingForm.addEventListener("submit", async (e) => {
   await streamGames()
   await streamLines()
 
-  console.log(lines)
-  identifyLines()
+  games = identifyLines(games)
+  lines = identifyLines(lines)
+  console.log({ games, lines })
 
   loading.style.display = "none"
 })
@@ -94,17 +95,23 @@ function prettyPrintLine(line) {
   }
 }
 
-function identifyLines() {
+function identifyLines(linesInput) {
   let taggedLines = {}
-  for (let line of lines) {
-    let id = ""
-    for (let i = 0; i < minMoves; i++) {
-      id += line.moves[i].notation.notation
-    }
+  for (let line of linesInput) {
+    if (line.moves.length <= minMoves) continue
+    let id = getLineId(line.moves)
     if (!Object.keys(taggedLines).includes(id)) {
       taggedLines[id] = []
     }
     taggedLines[id].push(line)
   }
-  lines = taggedLines
+  return taggedLines
+}
+
+function getLineId(moves) {
+  let id = ""
+  for (let i = 0; i < minMoves; i++) {
+    id += moves[i].notation.notation
+  }
+  return id
 }
