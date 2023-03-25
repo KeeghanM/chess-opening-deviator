@@ -27,6 +27,9 @@ openingForm.addEventListener("submit", async (e) => {
   await streamGames()
   await streamLines()
 
+  console.log(lines)
+  identifyLines()
+
   loading.style.display = "none"
 })
 
@@ -46,8 +49,6 @@ async function streamGames() {
     let game = parse(value)
     games.push(game[0])
   }
-
-  console.log(games)
 }
 
 async function streamLines() {
@@ -65,10 +66,7 @@ async function streamLines() {
       recursiveParse([], line.moves, line.tags, lines)
     }
   }
-
-  for (let line of lines) {
-    prettyPrintLine(line)
-  }
+  lines.pop()
 }
 
 function recursiveParse(lineSoFar, newMoves, tags, outputArray) {
@@ -94,5 +92,19 @@ function prettyPrintLine(line) {
       move.notation.notation +
       " "
   }
-  console.log(string)
+}
+
+function identifyLines() {
+  let taggedLines = {}
+  for (let line of lines) {
+    let id = ""
+    for (let i = 0; i < minMoves; i++) {
+      id += line.moves[i].notation.notation
+    }
+    if (!Object.keys(taggedLines).includes(id)) {
+      taggedLines[id] = []
+    }
+    taggedLines[id].push(line)
+  }
+  lines = taggedLines
 }
