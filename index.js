@@ -72,7 +72,6 @@ async function streamLines() {
       recursiveParse([], line.moves, line.tags, lines)
     }
   }
-  lines.pop()
 }
 
 function recursiveParse(lineSoFar, newMoves, tags, outputArray) {
@@ -150,11 +149,15 @@ async function runAnalysis() {
       let deviatingPlayer = ""
       let wrongMove = ""
       let rightMove = ""
+      let endOfBook = false
+      console.log({ "CHECKING GAME": game })
       for (let line of lines[id]) {
         let matchingMoveCount = 0
+        console.log({ "CHECKING LINE": line })
         for (const [index, bookMove] of line.moves.entries()) {
           if (
-            bookMove.notation.notation == game.moves[index].notation.notation
+            bookMove.notation.notation == game.moves[index].notation.notation &&
+            matchingMoveCount < line.moves.length - 1
           ) {
             matchingMoveCount++
           } else {
@@ -164,6 +167,7 @@ async function runAnalysis() {
               deviatingPlayer = turnColour == colour ? "Player" : "Opponent"
               wrongMove = game.moves[index].notation.notation
               rightMove = bookMove.notation.notation
+              endOfBook = matchingMoveCount == line.moves.length - 1
             }
             break
           }
@@ -180,6 +184,7 @@ async function runAnalysis() {
         rightMove,
         wrongMove,
         result,
+        endOfBook,
       }
       stats.games[id].push(gameStats)
     }
@@ -207,34 +212,37 @@ function displayStats(stats) {
   let intro = document.createElement("p")
   intro.classList.add("stats")
   intro.innerHTML = `
-  In total you played <span>${totalGames}</span> games, of which <span>${stats.gamesInRepertoire}</span> matched a line in your provided repertoire.<br />
-  Of those ${stats.gamesInRepertoire} games, you <span>won ${winPercent}, lost ${lossPercent}</span> and drew the remaining <span>${drawPercent}</span>.
+  In total you played <span>${totalGames}</span> games as ${colour}, of which <span>${stats.gamesInRepertoire}</span> matched a line in your provided repertoire.<br />
+  Of those ${stats.gamesInRepertoire} games, you <span>won ${winPercent}%, lost ${lossPercent}%</span> and drew the remaining <span>${drawPercent}%</span>.
   `
   statsContainer.appendChild(intro)
 
-  let deviationStats = getDeviations(stats.games)
-  let playerDeviationPercent = percent(
-    deviationStats.playerDeviations,
-    stats.gamesInRepertoire
-  )
   let deviations = document.createElement("p")
-  let playerDeviationWins = percent(
-    deviationStats.winsWhenPlayer,
-    deviationStats.playerDeviations
-  )
-  let opponentDeviationWins = percent(
-    deviationStats.winsWhenOpponent,
-    deviationStats.opponentDeviations
-  )
+  let deviationStats = getDeviations(stats.games)
+
   deviations.classList.add("stats")
   deviations.innerHTML = `
-  You deviated from the book before your opponent ${playerDeviationPercent} of the time. 
-  This resulted in you winning ${playerDeviationWins} of the time, versus winning ${opponentDeviationWins} of the time when your opponent deviated first.
+  You reached the end of a book line <span>${
+    deviationStats.endOfBook
+  } times</span>, leaving <span>${
+    stats.gamesInRepertoire - deviationStats.endOfBook
+  } games</span> to learn from.<br />
+  In those games which we can learn from, you <span>deviated ${
+    deviationStats.playerDeviations
+  } times</span>, of which you <span>won ${
+    deviationStats.winsWhenPlayer
+  }.</span><br />
+  Compared to your opponent deviating <span>${
+    deviationStats.opponentDeviations
+  } times</span>, of which you <span>won ${
+    deviationStats.winsWhenOpponent
+  }</span>.
   `
   statsContainer.appendChild(deviations)
 }
 
 function getDeviations(games) {
+  let endOfBook = 0
   let playerDeviations = 0
   let opponentDeviations = 0
   let winsWhenPlayer = 0
@@ -246,6 +254,11 @@ function getDeviations(games) {
 
   for (let [id, gamesArray] of Object.entries(games)) {
     for (let game of gamesArray) {
+      if (game.endOfBook) {
+        endOfBook++
+        continue
+      }
+
       if (game.deviatingPlayer == "Player") {
         playerDeviations++
         game.result == "Win"
@@ -273,9 +286,10 @@ function getDeviations(games) {
     drawsWhenOpponent,
     lossesWhenOpponent,
     lossesWhenPlayer,
+    endOfBook,
   }
 }
 
 function percent(number, of) {
-  return Math.round((number / of) * 100) + "%"
+  return Math.round((number / of) * 100)
 }
