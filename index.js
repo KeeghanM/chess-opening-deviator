@@ -33,9 +33,12 @@ openingForm.addEventListener("submit", async (e) => {
   lines = identifyLines(lines)
 
   let stats = await runAnalysis()
-  loading.style.display = "none"
+  console.log(stats)
 
+  loading.style.display = "none"
   displayStats(stats)
+  displayBreakdown(stats, "Learn from your mistakes", "Player")
+  displayBreakdown(stats, "Punish your opponent", "Opponent")
 })
 
 async function streamGames() {
@@ -150,10 +153,8 @@ async function runAnalysis() {
       let wrongMove = ""
       let rightMove = ""
       let endOfBook = false
-      console.log({ "CHECKING GAME": game })
       for (let line of lines[id]) {
         let matchingMoveCount = 0
-        console.log({ "CHECKING LINE": line })
         for (const [index, bookMove] of line.moves.entries()) {
           if (
             bookMove.notation.notation == game.moves[index].notation.notation &&
@@ -203,7 +204,6 @@ function calculateResult(result) {
 }
 
 function displayStats(stats) {
-  console.log(stats)
   let totalGames = stats.gamesInRepertoire + stats.gamesNotInRepertoire
   let winPercent = percent(stats.wins, stats.gamesInRepertoire)
   let drawPercent = percent(stats.draws, stats.gamesInRepertoire)
@@ -239,6 +239,54 @@ function displayStats(stats) {
   }</span>.
   `
   statsContainer.appendChild(deviations)
+}
+
+function displayBreakdown(stats, title, sideToShow) {
+  let breakdownTitle = document.createElement("h2")
+  breakdownTitle.innerText = title
+  statsContainer.appendChild(breakdownTitle)
+  for (let [id, gamesArray] of Object.entries(stats.games)) {
+    let idContainer = document.createElement("div")
+
+    for (let game of gamesArray) {
+      if (game.deviatingPlayer != sideToShow) continue
+
+      let moveNumber = Math.floor(game.movesInBook / 2)
+      moveNumber += (game.movesInBook / 2) % 2 == 0 ? ". " : "... "
+
+      let moveText = document.createElement("p")
+
+      if (sideToShow == "Player") {
+        moveText.innerHTML = `
+        You played ${moveNumber}${game.wrongMove}, correct was ${moveNumber}${game.rightMove}
+        `
+      } else if (game.result != "Win") {
+        moveText.innerHTML = `
+        You didn't win when ${moveNumber}${game.wrongMove} was played, considering adding a refutation to your repertoire
+        `
+      }
+      console.log(moveText)
+      if (moveText.innerHTML.length > 0) {
+        idContainer.appendChild(moveText)
+      }
+    }
+
+    if (idContainer.hasChildNodes()) {
+      let idTitle = document.createElement("h3")
+      for (let i = 0; i < minMoves; i++) {
+        idTitle.innerText += games[id][0].moves[i].notation.notation + " "
+      }
+
+      statsContainer.appendChild(idTitle)
+      statsContainer.appendChild(idContainer)
+    }
+  }
+}
+
+function displayPunishments(stats) {
+  let punishmentsTitle = document.createElement("h2")
+  punishmentsTitle.innerText = "Punishing opponents mistakes"
+  statsContainer.appendChild(punishmentsTitle)
 }
 
 function getDeviations(games) {
