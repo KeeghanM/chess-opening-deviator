@@ -1,6 +1,6 @@
 // Default the date picker to 3 months
 let date = new Date()
-date.setDate(date.getDate() - 10)
+date.setDate(date.getDate() - 90)
 document.getElementById("min-date").valueAsDate = date
 
 let openingForm = document.getElementById("opening-form")
@@ -212,15 +212,24 @@ function displayStats(stats) {
   `
   statsContainer.appendChild(intro)
 
-  let { playerDeviations, opponentDeviations } = getDeviations(stats.games)
+  let deviationStats = getDeviations(stats.games)
   let playerDeviationPercent = percent(
-    playerDeviations,
+    deviationStats.playerDeviations,
     stats.gamesInRepertoire
   )
   let deviations = document.createElement("p")
+  let playerDeviationWins = percent(
+    deviationStats.winsWhenPlayer,
+    deviationStats.playerDeviations
+  )
+  let opponentDeviationWins = percent(
+    deviationStats.winsWhenOpponent,
+    deviationStats.opponentDeviations
+  )
   deviations.classList.add("stats")
   deviations.innerHTML = `
   You deviated from the book before your opponent ${playerDeviationPercent} of the time. 
+  This resulted in you winning ${playerDeviationWins} of the time, versus winning ${opponentDeviationWins} of the time when your opponent deviated first.
   `
   statsContainer.appendChild(deviations)
 }
@@ -229,17 +238,42 @@ function getDeviations(games) {
   let playerDeviations = 0
   let opponentDeviations = 0
   let winsWhenPlayer = 0
+  let lossesWhenPlayer = 0
+  let drawsWhenPlayer = 0
   let winsWhenOpponent = 0
+  let lossesWhenOpponent = 0
+  let drawsWhenOpponent = 0
 
   for (let [id, gamesArray] of Object.entries(games)) {
     for (let game of gamesArray) {
-      game.deviatingPlayer == "Player"
-        ? playerDeviations++
-        : opponentDeviations++
+      if (game.deviatingPlayer == "Player") {
+        playerDeviations++
+        game.result == "Win"
+          ? winsWhenPlayer++
+          : game.result == "Loss"
+          ? lossesWhenPlayer++
+          : drawsWhenPlayer++
+      } else {
+        opponentDeviations++
+        game.result == "Win"
+          ? winsWhenOpponent++
+          : game.result == "Loss"
+          ? lossesWhenOpponent++
+          : drawsWhenOpponent++
+      }
     }
   }
 
-  return { playerDeviations, opponentDeviations }
+  return {
+    playerDeviations,
+    opponentDeviations,
+    winsWhenOpponent,
+    winsWhenPlayer,
+    drawsWhenPlayer,
+    drawsWhenOpponent,
+    lossesWhenOpponent,
+    lossesWhenPlayer,
+  }
 }
 
 function percent(number, of) {
