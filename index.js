@@ -1,6 +1,6 @@
 // Default the date picker to 3 months
 let date = new Date()
-date.setDate(date.getDate() - 90)
+date.setDate(date.getDate() - 10)
 document.getElementById("min-date").valueAsDate = date
 
 let openingForm = document.getElementById("opening-form")
@@ -129,6 +129,7 @@ async function runAnalysis() {
     wins: 0,
     losses: 0,
     draws: 0,
+    games: {},
   }
 
   for (let [id, gamesArray] of Object.entries(games)) {
@@ -140,8 +141,8 @@ async function runAnalysis() {
         stats.gamesNotInRepertoire++
         continue
       }
-      if (!stats[id]) {
-        stats[id] = []
+      if (!stats.games[id]) {
+        stats.games[id] = []
       }
 
       stats.gamesInRepertoire++
@@ -180,7 +181,7 @@ async function runAnalysis() {
         wrongMove,
         result,
       }
-      stats[id].push(gameStats)
+      stats.games[id].push(gameStats)
     }
   }
   return stats
@@ -197,17 +198,50 @@ function calculateResult(result) {
 }
 
 function displayStats(stats) {
+  console.log(stats)
   let totalGames = stats.gamesInRepertoire + stats.gamesNotInRepertoire
-  let winPercent = Math.round((stats.wins / stats.gamesInRepertoire) * 100)
-  let drawPercent = Math.round((stats.draws / stats.gamesInRepertoire) * 100)
-  let lossPercent = Math.round((stats.losses / stats.gamesInRepertoire) * 100)
+  let winPercent = percent(stats.wins, stats.gamesInRepertoire)
+  let drawPercent = percent(stats.draws, stats.gamesInRepertoire)
+  let lossPercent = percent(stats.losses, stats.gamesInRepertoire)
 
   let intro = document.createElement("p")
   intro.classList.add("stats")
   intro.innerHTML = `
   In total you played <span>${totalGames}</span> games, of which <span>${stats.gamesInRepertoire}</span> matched a line in your provided repertoire.<br />
-  Of those ${stats.gamesInRepertoire} games, you <span>won ${winPercent}%</span>, <span>lost ${lossPercent}%</span> and drew the remaining <span>${drawPercent}%</span>.
+  Of those ${stats.gamesInRepertoire} games, you <span>won ${winPercent}, lost ${lossPercent}</span> and drew the remaining <span>${drawPercent}</span>.
   `
-
   statsContainer.appendChild(intro)
+
+  let { playerDeviations, opponentDeviations } = getDeviations(stats.games)
+  let playerDeviationPercent = percent(
+    playerDeviations,
+    stats.gamesInRepertoire
+  )
+  let deviations = document.createElement("p")
+  deviations.classList.add("stats")
+  deviations.innerHTML = `
+  You deviated from the book before your opponent ${playerDeviationPercent} of the time. 
+  `
+  statsContainer.appendChild(deviations)
+}
+
+function getDeviations(games) {
+  let playerDeviations = 0
+  let opponentDeviations = 0
+  let winsWhenPlayer = 0
+  let winsWhenOpponent = 0
+
+  for (let [id, gamesArray] of Object.entries(games)) {
+    for (let game of gamesArray) {
+      game.deviatingPlayer == "Player"
+        ? playerDeviations++
+        : opponentDeviations++
+    }
+  }
+
+  return { playerDeviations, opponentDeviations }
+}
+
+function percent(number, of) {
+  return Math.round((number / of) * 100) + "%"
 }
