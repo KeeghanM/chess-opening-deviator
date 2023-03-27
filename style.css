@@ -84,3 +84,7 @@ button[type="reset"] {
 aside li {
   padding: 0.6rem 1.2rem;
 }
+
+.stats span {
+  font-weight: bold;
+}

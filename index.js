@@ -5,6 +5,7 @@ document.getElementById("min-date").valueAsDate = date
 
 let openingForm = document.getElementById("opening-form")
 let loading = document.getElementById("loading")
+let statsContainer = document.getElementById("stats-container")
 let linesLoadedCount = document.getElementById("lines-loaded-count")
 let gamesLoadedCount = document.getElementById("games-loaded-count")
 let gamesAnalyzedCount = document.getElementById("games-analyzed-count")
@@ -31,9 +32,10 @@ openingForm.addEventListener("submit", async (e) => {
   games = identifyLines(games)
   lines = identifyLines(lines)
 
-  await runAnalysis()
-
+  let stats = await runAnalysis()
   loading.style.display = "none"
+
+  displayStats(stats)
 })
 
 async function streamGames() {
@@ -124,6 +126,9 @@ async function runAnalysis() {
   let stats = {
     gamesInRepertoire: 0,
     gamesNotInRepertoire: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
   }
 
   for (let [id, gamesArray] of Object.entries(games)) {
@@ -163,17 +168,22 @@ async function runAnalysis() {
           }
         }
       }
+      let result = calculateResult(game.tags.Result)
+      if (result == "Win") stats.wins++
+      if (result == "Draw") stats.draws++
+      if (result == "Loss") stats.losses++
+
       let gameStats = {
         movesInBook: Math.floor(longestMatchingLine / 2),
         deviatingPlayer,
         rightMove,
         wrongMove,
-        result: calculateResult(game.tags.Result),
+        result,
       }
       stats[id].push(gameStats)
     }
   }
-  console.log(stats)
+  return stats
 }
 
 function calculateResult(result) {
@@ -184,4 +194,20 @@ function calculateResult(result) {
     return colour == "white" ? "Loss" : "Win"
   }
   return "Draw"
+}
+
+function displayStats(stats) {
+  let totalGames = stats.gamesInRepertoire + stats.gamesNotInRepertoire
+  let winPercent = Math.round((stats.wins / stats.gamesInRepertoire) * 100)
+  let drawPercent = Math.round((stats.draws / stats.gamesInRepertoire) * 100)
+  let lossPercent = Math.round((stats.losses / stats.gamesInRepertoire) * 100)
+
+  let intro = document.createElement("p")
+  intro.classList.add("stats")
+  intro.innerHTML = `
+  In total you played <span>${totalGames}</span> games, of which <span>${stats.gamesInRepertoire}</span> matched a line in your provided repertoire.<br />
+  Of those ${stats.gamesInRepertoire} games, you <span>won ${winPercent}%</span>, <span>lost ${lossPercent}%</span> and drew the remaining <span>${drawPercent}%</span>.
+  `
+
+  statsContainer.appendChild(intro)
 }
