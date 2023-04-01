@@ -33,7 +33,6 @@ openingForm.addEventListener("submit", async (e) => {
   lines = identifyLines(lines)
 
   let stats = await runAnalysis()
-  console.log(stats)
 
   loading.style.display = "none"
   displayStats(stats)
@@ -180,7 +179,7 @@ async function runAnalysis() {
       if (result == "Loss") stats.losses++
 
       let gameStats = {
-        movesInBook: Math.floor(longestMatchingLine / 2),
+        movesInBook: Math.floor(longestMatchingLine / 2) + 1,
         deviatingPlayer,
         rightMove,
         wrongMove,
@@ -249,13 +248,17 @@ function displayBreakdown(stats, title, sideToShow) {
     let idContainer = document.createElement("div")
 
     for (let game of gamesArray) {
-      if (game.deviatingPlayer != sideToShow) continue
+      if (game.deviatingPlayer != sideToShow || game.endOfBook) continue
 
-      let moveNumber = Math.floor(game.movesInBook / 2)
-      moveNumber += (game.movesInBook / 2) % 2 == 0 ? ". " : "... "
+      let ellipses = ""
+      if (sideToShow == "Player") {
+        ellipses = colour == "white" ? ". " : "... "
+      } else {
+        ellipses = colour == "white" ? "... " : ". "
+      }
+      let moveNumber = game.movesInBook + ellipses
 
       let moveText = document.createElement("p")
-
       if (sideToShow == "Player") {
         moveText.innerHTML = `
         You played ${moveNumber}${game.wrongMove}, correct was ${moveNumber}${game.rightMove}
@@ -265,7 +268,6 @@ function displayBreakdown(stats, title, sideToShow) {
         You didn't win when ${moveNumber}${game.wrongMove} was played, considering adding a refutation to your repertoire
         `
       }
-      console.log(moveText)
       if (moveText.innerHTML.length > 0) {
         idContainer.appendChild(moveText)
       }
