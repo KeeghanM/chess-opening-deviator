@@ -226,16 +226,16 @@ function displayStats(stats) {
   } times</span>, leaving <span>${
     stats.gamesInRepertoire - deviationStats.endOfBook
   } games</span> to learn from.<br />
-  In those games which we can learn from, you <span>deviated ${
+  In those games which we can learn from, you deviated from the book <span> ${
     deviationStats.playerDeviations
-  } times</span>, of which you <span>won ${
-    deviationStats.winsWhenPlayer
-  }.</span><br />
-  Compared to your opponent deviating <span>${
+  } times</span>, compared to your opponent deviating <span>${
     deviationStats.opponentDeviations
-  } times</span>, of which you <span>won ${
+  } times</span>.<br />
+  When your opponent deviated from book, you managed to <span>win ${
     deviationStats.winsWhenOpponent
-  }</span>.
+  }</span> times which leaves <span>${
+    deviationStats.opponentDeviations - deviationStats.winsWhenOpponent
+  } games</span> where you can learn refutations to punish your opponents mistakes.
   `
   statsContainer.appendChild(deviations)
 }
@@ -265,7 +265,7 @@ function displayBreakdown(stats, title, sideToShow) {
         `
       } else if (game.result != "Win") {
         moveText.innerHTML = `
-        You didn't win when ${moveNumber}${game.wrongMove} was played, considering adding a refutation to your repertoire
+        You didn't win when ${moveNumber}${game.wrongMove} was played, consider adding a refutation to your repertoire
         `
       }
       if (moveText.innerHTML.length > 0) {
@@ -275,9 +275,16 @@ function displayBreakdown(stats, title, sideToShow) {
 
     if (idContainer.hasChildNodes()) {
       let idTitle = document.createElement("h3")
-      for (let i = 0; i < minMoves; i++) {
-        idTitle.innerText += games[id][0].moves[i].notation.notation + " "
+      let idTitleText = ECO[id.toLowerCase()]
+      // console.log({ id, name: ECO[id] })
+      if (!idTitleText) {
+        idTitleText = ""
+        for (let i = 0; i < minMoves; i++) {
+          idTitleText += games[id][0].moves[i].notation.notation + " "
+        }
       }
+
+      idTitle.innerText = idTitleText
 
       statsContainer.appendChild(idTitle)
       statsContainer.appendChild(idContainer)
