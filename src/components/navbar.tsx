@@ -1,43 +1,53 @@
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { SunIcon,MoonIcon } from '@heroicons/react/24/solid'
+import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import { dark } from "@clerk/themes";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
 const NavBar = () => {
-    const { systemTheme, theme, setTheme } = useTheme();
-    const currentTheme = theme === 'system' ? systemTheme : theme;
+  const { systemTheme, theme, setTheme } = useTheme();
+  const currentTheme = theme === "system" ? systemTheme : theme;
+  const appearance = currentTheme == "dark" ? { baseTheme: dark } : {};
   return (
-    <nav className="flex h-20 w-full justify-between bg-white dark:bg-slate-800">
-      <ul className="flex">
+    <nav className="flex h-20 w-full items-center justify-between bg-slate-200 px-12 dark:bg-slate-800">
+      <ul className="flex items-center gap-4 text-xl ">
         <li>
-          <Link href="/">Opening DeviatOr</Link>
+          <Link href="/" className="pr-12 text-4xl text-orange-400 font-bold">
+            Opening DeviatOr
+          </Link>
         </li>
         <li>
-          <Link href="/">Home</Link>
+          <Link href="/" className="hover:text-orange-600">Home</Link>
         </li>
         <li>
-          <Link href="/about">About</Link>
+          <Link href="/about" className="hover:text-orange-600">About</Link>
         </li>
         <li>
-          <Link href="/contact">Contact</Link>
+          <Link href="/contact" className="hover:text-orange-600">Contact</Link>
         </li>
       </ul>
-      <div className="flex items-center">
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-          <SignedOut>
-            <Link href="/sign-in">Sign In</Link>
-          </SignedOut>
-          <button
-            onClick={() => currentTheme == "dark"? setTheme('light'): setTheme("dark")}
-            className='bg-slate-800 dark:bg-slate-200 p-2 rounded-[100vw]'>
-            {currentTheme == "dark" ? <SunIcon className="h-6 w-6 text-slate-800" /> :
-            <MoonIcon className="h-6 w-6 text-slate-200" /> }
+      <div className="flex items-center gap-4">
+        <SignedIn>
+          <UserButton appearance={appearance} />
+        </SignedIn>
+        <SignedOut>
+          <Link href="/sign-in">Sign In</Link>
+        </SignedOut>
+        <button
+          onClick={() =>
+            currentTheme == "dark" ? setTheme("light") : setTheme("dark")
+          }
+          className="rounded-[100vw] bg-slate-800 p-1 dark:bg-slate-200"
+        >
+          {currentTheme == "dark" ? (
+            <SunIcon className="h-6 w-6 text-slate-800" />
+          ) : (
+            <MoonIcon className="h-6 w-6 text-slate-200" />
+          )}
         </button>
       </div>
     </nav>
   );
 };
 
-export default NavBar
+export default NavBar;
