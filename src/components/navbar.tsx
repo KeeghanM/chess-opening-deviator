@@ -31,7 +31,7 @@ const NavBar = () => {
           <UserButton appearance={appearance} />
         </SignedIn>
         <SignedOut>
-          <Link href="/sign-in">Sign In</Link>
+          <Link href="/sign-in" className="px-4 py-2 bg-slate-800 text-slate-200 dark:bg-slate-200 dark:text-slate-800 rounded-xl font-bold text-xl">Sign In</Link>
         </SignedOut>
         <button
           onClick={() =>
