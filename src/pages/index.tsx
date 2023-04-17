@@ -1,7 +1,6 @@
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { type NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
+import NavBar from "~/components/navbar";
 
 const Home: NextPage = () => {
   return (
@@ -16,18 +15,7 @@ const Home: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <nav className="flex justify-between">
-      <ul className="w-full h-20 bg-white dark:bg-slate-800 flex">
-        <li>
-          <Link href="/">Opening DeviatOr</Link>
-        </li>
-        <li><Link href="/">Home</Link></li>
-        <li><Link href="/about">About</Link></li>
-        <li><Link href="/contact">Contact</Link></li>
-      </ul>
-      <SignedIn><UserButton /></SignedIn>
-      <SignedOut><Link href="/sign-in">Sign In</Link></SignedOut>
-    </nav>
+      <NavBar />
     </>
   );
 };
