@@ -13,6 +13,7 @@
     "@clerk/nextjs": "^4.16.2",
     "@clerk/themes": "^1.6.1",
     "@heroicons/react": "^2.0.17",
+    "@mliebelt/pgn-parser": "^1.4.7",
     "@prisma/client": "^4.11.0",
     "@tanstack/react-query": "^4.28.0",
     "@trpc/client": "^10.18.0",

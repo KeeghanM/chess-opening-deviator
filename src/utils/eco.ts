@@ -3414,3 +3414,5 @@ const ECO = {
     "d4d6nf3bg4c4nd7qb3rb8": "Zukertort Opening: Wade Defense, Chigorin Plan",
     "nf3a5": "Zukertort Opening: Ware Defense"
 }
+
+export default ECO

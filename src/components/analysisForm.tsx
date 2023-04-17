@@ -1,8 +1,32 @@
-const AnalysisForm = () => {
-  const handleSubmit = async (event: { preventDefault: () => void }) => {
-    event.preventDefault();
+import React, { FormEvent } from "react";
+interface CustomElements extends HTMLFormControlsCollection   {
+  username: HTMLInputElement;
+  studyId: HTMLInputElement;
+  colour: HTMLInputElement;
+  minDate: HTMLInputElement;
+  minMoves: HTMLInputElement;
+}
+ 
+interface CustomForm extends HTMLFormElement {
+  readonly elements: CustomElements;
+}
 
-    alert();
+let username:string, studyId:string, colour:string, minDate:string, minMoves:number
+let loadedGames: number = 0
+let loadedLines: number = 0
+let games = []
+let lines = []
+
+const AnalysisForm = () => {
+  const handleSubmit = async (event: FormEvent<CustomForm>) => {
+    event.preventDefault();
+    const target = event.currentTarget.elements;
+  username = target.username.value
+  studyId = target.studyId.value
+  colour = target.colour.value
+  minDate = target.minDate.value
+  minMoves = parseInt(target.minMoves.value)
+
   };
 
   return (
@@ -26,8 +50,8 @@ const AnalysisForm = () => {
           <label className="font-bold" htmlFor="study-id">Study ID</label>
           <input
             type="text"
-            id="study-id"
-            name="study-id"
+            id="studyId"
+            name="studyId"
             required
             className="dark:text-black"
           />
@@ -55,8 +79,8 @@ const AnalysisForm = () => {
           <label className="font-bold" htmlFor="min-date">Games Since</label>
           <input
             type="date"
-            id="min-date"
-            name="min-date"
+            id="minDate"
+            name="minDate"
             required
             className="dark:text-black"
           />
@@ -65,8 +89,8 @@ const AnalysisForm = () => {
           <label className="font-bold" htmlFor="min-moves">Half Move Threshold</label>
           <input
             type="number"
-            id="min-moves"
-            name="min-moves"
+            id="minMoves"
+            name="minMoves"
             value="6"
             min="2"
             max="20"

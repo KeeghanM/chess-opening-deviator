@@ -40,24 +40,7 @@ openingForm.addEventListener("submit", async (e) => {
   displayBreakdown(stats, "Punish your opponent", "Opponent")
 })
 
-async function streamGames() {
-  const response = await fetch(
-    `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
-      minDate
-    )}&perfType=blitz,rapid,classical`
-  )
-  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader()
 
-  while (true) {
-    const { value, done } = await reader.read()
-    if (done) break
-    loadedGames++
-    gamesLoadedCount.innerText = loadedGames
-    gamesAnalyzedCount.innerText = "0/" + loadedGames
-    let game = parse(value)
-    games.push(game[0])
-  }
-}
 
 async function streamLines() {
   const response = await fetch(`https://lichess.org/api/study/${studyId}.pgn`)
