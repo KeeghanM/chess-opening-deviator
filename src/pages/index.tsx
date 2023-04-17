@@ -1,5 +1,6 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import AnalysisForm from "~/components/analysisForm";
 import NavBar from "~/components/navbar";
 
 const Home: NextPage = () => {
@@ -16,6 +17,11 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <NavBar />
+      <main className="px-6 py-4 md:px-24 md:py-12">
+        <h1 className="text-4xl text-slate-800 dark:text-slate-200 pb-4">Chess Opening Deviation Analysis</h1>
+        <AnalysisForm />
+        <div id="stats-container"></div>
+      </main>
     </>
   );
 };
