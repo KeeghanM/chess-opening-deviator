@@ -41,39 +41,6 @@ openingForm.addEventListener("submit", async (e) => {
 })
 
 
-
-async function streamLines() {
-  const response = await fetch(`https://lichess.org/api/study/${studyId}.pgn`)
-  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader()
-  let rawString = ""
-  while (true) {
-    const { value, done } = await reader.read()
-    if (done) break
-    loadedLines++
-    linesLoadedCount.innerText = loadedLines
-    rawString += value
-    let parsedLine = parse(value)
-    for (let line of parsedLine) {
-      recursiveParse([], line.moves, line.tags, lines)
-    }
-  }
-}
-
-function recursiveParse(lineSoFar, newMoves, tags, outputArray) {
-  let lineArray = JSON.parse(JSON.stringify(lineSoFar)) // Deep Clone the array
-  for (let move of newMoves) {
-    for (let variation of move.variations) {
-      recursiveParse(lineArray, variation, tags, outputArray)
-    }
-    lineArray.push(move)
-  }
-  let line = {
-    tags,
-    moves: lineArray,
-  }
-  outputArray.push(line)
-}
-
 function prettyPrintLine(line) {
   let string = ""
   for (let move of line.moves) {

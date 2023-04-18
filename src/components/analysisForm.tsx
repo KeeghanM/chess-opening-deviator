@@ -1,5 +1,5 @@
 import React, { FormEvent } from "react";
-import { parse } from '@mliebelt/pgn-parser'
+import { parse } from "@mliebelt/pgn-parser";
 interface CustomElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
   studyId: HTMLInputElement;
@@ -12,9 +12,6 @@ interface CustomForm extends HTMLFormElement {
   readonly elements: CustomElements;
 }
 
-
-let lines = [];
-
 const AnalysisForm = () => {
   const [status, setStatus] = React.useState("default");
   const [loadedGames, setLoadedGames] = React.useState(0);
@@ -22,7 +19,7 @@ const AnalysisForm = () => {
 
   const handleSubmit = async (event: FormEvent<CustomForm>) => {
     event.preventDefault();
-    setStatus("loading")
+    setStatus("loading");
     const target = event.currentTarget.elements;
     let username = target.username.value;
     let studyId = target.studyId.value;
@@ -30,65 +27,94 @@ const AnalysisForm = () => {
     let minDate = target.minDate.value;
     let minMoves = parseInt(target.minMoves.value);
 
-    let games = []
-    await streamGames(games,username,colour,minDate)
-    if(games.length == 0){
-        setStatus("noGames")
-        return
-    }
-    console.log(games)
-    setStatus("analysis")
-
-
-  };
-
-  const streamGames = async (games,username,colour,minDate) => {
-    try {
-
-    const response = await fetch(
-      `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
-        minDate
-      )}&perfType=blitz,rapid,classical`
-    );
-    if (!response.body) {
+    let games = await streamGames(username, colour, minDate);
+    if (games.length == 0) {
+      setStatus("noGames");
       return;
     }
 
-    const reader = response.body
-      .pipeThrough(new TextDecoderStream())
-      .getReader();
+    let lines = await streamLines(studyId);
 
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      let parsedGames = parse(value, {startRule: "games"});
-      
-      for(let game of parsedGames) {
-        console.log(game)
-          setLoadedGames(loadedGames+1);
-        games.push(game)
+    setStatus("analysis");
+  };
+
+  const streamGames = async (games, username, colour, minDate) => {
+    try {
+      const response = await fetch(
+        `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
+          minDate
+        )}&perfType=blitz,rapid,classical`
+      );
+      if (!response.body) {
+        return;
       }
-    }
-    }
-    catch (error) {
-        console.log(error)
+
+      let games = [];
+      const reader = response.body
+        .pipeThrough(new TextDecoderStream())
+        .getReader();
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        let parsedGames = parse(value, { startRule: "games" });
+
+        for (let game of parsedGames) {
+          console.log(game);
+          setLoadedGames(loadedGames + 1);
+          games.push(game);
+        }
+      }
+      return games;
+    } catch (error) {
+      console.log(error);
     }
   };
 
+  const streamLines = async (studyId) => {
+    try {
+      const response = await fetch(
+        `https://lichess.org/api/study/${studyId}.pgn`
+      );
+      let lines = [];
+      const reader = response.body
+        .pipeThrough(new TextDecoderStream())
+        .getReader();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        setLoadedLines(loadedLines + 1);
+        let parsedLine = parse(value, { startRule: "games" });
+        for (let line of parsedLine) {
+          recursiveParse([], line.moves, line.tags, lines);
+        }
+      }
+      return lines;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const recursiveParse = (lineSoFar, newMoves, tags, outputArray) => {
+    let lineArray = JSON.parse(JSON.stringify(lineSoFar)); // Deep Clone the array
+    for (let move of newMoves) {
+      for (let variation of move.variations) {
+        recursiveParse(lineArray, variation, tags, outputArray);
+      }
+      lineArray.push(move);
+    }
+    let line = {
+      tags,
+      moves: lineArray,
+    };
+    outputArray.push(line);
+  };
+
   return status == "loading" ? (
-    <div>
-      <p>Currently Loading...</p>
-      <p>
-        <span>{loadedGames}</span> Games Loaded
-      </p>
-      <p>
-        <span>{loadedLines}</span> Lines Loaded
-      </p>
-      <p>
-        <span>0/{loadedGames}</span> Games Analyzed
-      </p>
-    </div>
-  ) : status == "noGames" ? (<><div><p>Unfortunately, no games found</p></div></>) : (
+    <loadingScreen />
+  ) : status == "noGames" ? (
+    <errorScreen />
+  ) : (
     <>
       <form
         id="opening-form"
@@ -104,7 +130,7 @@ const AnalysisForm = () => {
             id="username"
             name="username"
             required
-            className="dark:text-black"
+            className="dark:bg-slate-500"
           />
         </fieldset>
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
@@ -116,7 +142,7 @@ const AnalysisForm = () => {
             id="studyId"
             name="studyId"
             required
-            className="dark:text-black"
+            className="dark:bg-slate-500"
           />
         </fieldset>
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
@@ -149,7 +175,7 @@ const AnalysisForm = () => {
             id="minDate"
             name="minDate"
             required
-            className="dark:text-black"
+            className="dark:bg-slate-500"
           />
         </fieldset>
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
@@ -164,7 +190,7 @@ const AnalysisForm = () => {
             min="2"
             max="20"
             required
-            className="dark:text-black"
+            className="dark:bg-slate-500"
           />
         </fieldset>
         <fieldset className="flex gap-2">
@@ -183,6 +209,33 @@ const AnalysisForm = () => {
         </fieldset>
       </form>
     </>
+  );
+};
+
+const errorScreen = () => {
+  return (
+    <>
+      <div>
+        <p>Unfortunately, no games found</p>
+      </div>
+    </>
+  );
+};
+
+const loadingScreen = (loadedGames, loadedLines) => {
+  return (
+    <div>
+      <p>Currently Loading...</p>
+      <p>
+        <span>{loadedGames}</span> Games Loaded
+      </p>
+      <p>
+        <span>{loadedLines}</span> Lines Loaded
+      </p>
+      <p>
+        <span>0/{loadedGames}</span> Games Analyzed
+      </p>
+    </div>
   );
 };
 
