@@ -14,6 +14,8 @@ interface CustomForm extends HTMLFormElement {
 
 const AnalysisForm = () => {
   const [status, setStatus] = React.useState("default");
+  const [stats, setStats] = React.useState();
+  const [colour, setColour] = React.useState("");
   const [loadedGames, setLoadedGames] = React.useState(0);
   const [loadedLines, setLoadedLines] = React.useState(0);
   const [analysedCount, setAnalysedCount] = React.useState(0);
@@ -26,11 +28,11 @@ const AnalysisForm = () => {
     const target = event.currentTarget.elements;
     let username = target.username.value;
     let studyId = target.studyId.value;
-    let colour = target.colour.value;
+    setColour(target.colour.value);
     let minDate = target.minDate.value;
     minMoves = parseInt(target.minMoves.value);
 
-    let games = await streamGames(username, colour, minDate);
+    let games = await streamGames(username, minDate);
     if (!games || Object.keys(games).length == 0) {
       setStatus("noGames");
       return;
@@ -42,12 +44,10 @@ const AnalysisForm = () => {
       return;
     }
 
-    let stats = await runAnalysis(games, lines, colour);
-
-    console.log(stats)
+    setStats(await runAnalysis(games, lines));
   };
 
-  const streamGames = async (username, colour, minDate) => {
+  const streamGames = async (username, minDate) => {
     try {
       const response = await fetch(
         `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
@@ -102,7 +102,7 @@ const AnalysisForm = () => {
     }
   };
 
-  const runAnalysis = async (games, lines, colour) => {
+  const runAnalysis = async (games, lines) => {
     let stats = {
       gamesInRepertoire: 0,
       gamesNotInRepertoire: 0,
@@ -153,7 +153,7 @@ const AnalysisForm = () => {
             }
           }
         }
-        let result = calculateResult(game.tags.Result,colour);
+        let result = calculateResult(game.tags.Result);
         if (result == "Win") stats.wins++;
         if (result == "Draw") stats.draws++;
         if (result == "Loss") stats.losses++;
@@ -172,15 +172,15 @@ const AnalysisForm = () => {
     return stats;
   };
 
-  const calculateResult = (result,colour) => {
-  if (result == "1-0") {
-    return colour == "white" ? "Win" : "Loss"
-  }
-  if (result == "0-1") {
-    return colour == "white" ? "Loss" : "Win"
-  }
-  return "Draw"
-}
+  const calculateResult = (result) => {
+    if (result == "1-0") {
+      return colour == "white" ? "Win" : "Loss";
+    }
+    if (result == "0-1") {
+      return colour == "white" ? "Loss" : "Win";
+    }
+    return "Draw";
+  };
 
   const identifyLines = (linesInput) => {
     let taggedLines = {};
@@ -220,7 +220,9 @@ const AnalysisForm = () => {
     outputArray.push(line);
   };
 
-  return status == "loading" ? (
+  return stats ? (
+    <StatsDisplay stats={stats} colour={colour} />
+  ) : status == "loading" ? (
     <div>
       <p>Currently Loading...</p>
       <p>
@@ -343,5 +345,33 @@ const AnalysisForm = () => {
     </>
   );
 };
+
+const StatsDisplay = (props) => {
+  let stats = props.stats;
+  let colour = props.colour;
+  let totalGames = stats.gamesInRepertoire + stats.gamesNotInRepertoire;
+  let winPercent = percent(stats.wins, stats.gamesInRepertoire);
+  let drawPercent = percent(stats.draws, stats.gamesInRepertoire);
+  let lossPercent = percent(stats.losses, stats.gamesInRepertoire);
+  return (
+    <>
+      <p>
+        In total you played <span>{totalGames}</span> games as {colour}, of
+        which <span>{stats.gamesInRepertoire}</span> matched a line in your
+        provided repertoire.
+        <br />
+        Of those {stats.gamesInRepertoire} games, you{" "}
+        <span>
+          won {winPercent}%, lost {lossPercent}%
+        </span>{" "}
+        and drew the remaining <span>{drawPercent}%</span>.
+      </p>
+    </>
+  );
+};
+
+function percent(number, of) {
+  return Math.round((number / of) * 100);
+}
 
 export default AnalysisForm;
