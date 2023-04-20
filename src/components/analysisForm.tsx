@@ -28,22 +28,26 @@ const AnalysisForm = () => {
     let minMoves = parseInt(target.minMoves.value);
 
     let games = await streamGames(username, colour, minDate);
-    if (games.length == 0) {
+    if (games?.length == 0) {
       setStatus("noGames");
       return;
     }
 
     let lines = await streamLines(studyId);
+    if (lines?.length == 0) {
+      setStatus("noGames");
+      return;
+    }
+
+    console.log({ games, lines });
 
     setStatus("analysis");
   };
 
-  const streamGames = async (games, username, colour, minDate) => {
+  const streamGames = async (username, colour, minDate) => {
     try {
       const response = await fetch(
-        `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
-          minDate
-        )}&perfType=blitz,rapid,classical`
+        `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(minDate)}&perfType=blitz,rapid,classical&opening=true`
       );
       if (!response.body) {
         return;
@@ -60,7 +64,6 @@ const AnalysisForm = () => {
         let parsedGames = parse(value, { startRule: "games" });
 
         for (let game of parsedGames) {
-          console.log(game);
           setLoadedGames(loadedGames + 1);
           games.push(game);
         }
@@ -83,7 +86,6 @@ const AnalysisForm = () => {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        setLoadedLines(loadedLines + 1);
         let parsedLine = parse(value, { startRule: "games" });
         for (let line of parsedLine) {
           recursiveParse([], line.moves, line.tags, lines);
@@ -96,6 +98,8 @@ const AnalysisForm = () => {
   };
 
   const recursiveParse = (lineSoFar, newMoves, tags, outputArray) => {
+    setLoadedLines(loadedLines + 1);
+
     let lineArray = JSON.parse(JSON.stringify(lineSoFar)); // Deep Clone the array
     for (let move of newMoves) {
       for (let variation of move.variations) {
@@ -111,9 +115,23 @@ const AnalysisForm = () => {
   };
 
   return status == "loading" ? (
-    <loadingScreen />
+    <div>
+      <p>Currently Loading...</p>
+      <p>
+        <span>{loadedGames}</span> Games Loaded
+      </p>
+      <p>
+        <span>{loadedLines}</span> Lines Loaded
+      </p>
+      <p>
+        <span>0/{loadedGames}</span> Games Analyzed
+      </p>
+    </div>
   ) : status == "noGames" ? (
-    <errorScreen />
+    <div>
+      <p>Unfortunately, no games found</p>
+      <button onClick={() => setStatus("default")}></button>
+    </div>
   ) : (
     <>
       <form
@@ -130,7 +148,7 @@ const AnalysisForm = () => {
             id="username"
             name="username"
             required
-            className="dark:bg-slate-500"
+            className="border border-orange-500 px-2  py-1 dark:bg-slate-500"
           />
         </fieldset>
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
@@ -142,7 +160,7 @@ const AnalysisForm = () => {
             id="studyId"
             name="studyId"
             required
-            className="dark:bg-slate-500"
+            className="border border-orange-500 px-2 py-1 dark:bg-slate-500   "
           />
         </fieldset>
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
@@ -155,13 +173,13 @@ const AnalysisForm = () => {
                 type="radio"
                 id="white"
                 name="colour"
-                value="white"
+                defaultValue="white"
                 defaultChecked
               />
               <label htmlFor="white">White</label>
             </span>
             <span className="flex items-center gap-2">
-              <input type="radio" id="black" name="colour" value="black" />
+              <input type="radio" id="black" name="colour" defaultValue="black" />
               <label htmlFor="black">Black</label>
             </span>
           </span>
@@ -190,52 +208,25 @@ const AnalysisForm = () => {
             min="2"
             max="20"
             required
-            className="dark:bg-slate-500"
+            className="border border-orange-500 px-2 py-1 dark:bg-slate-500"
           />
         </fieldset>
         <fieldset className="flex gap-2">
           <button
             type="submit"
-            className="rounded-xl bg-orange-400 px-4 py-2 text-xl font-bold text-slate-800"
+            className="rounded-xl bg-orange-400 px-2 py-2 text-xl font-bold text-slate-800"
           >
             Run Analysis
           </button>
           <button
             type="reset"
-            className="rounded-xl border border-slate-800 px-4 py-2 text-xl font-bold dark:border-slate-200 dark:text-slate-200"
+            className="rounded-xl border border-slate-800 px-2 py-2 text-xl font-bold dark:border-slate-200 dark:text-slate-200"
           >
             Reset
           </button>
         </fieldset>
       </form>
     </>
-  );
-};
-
-const errorScreen = () => {
-  return (
-    <>
-      <div>
-        <p>Unfortunately, no games found</p>
-      </div>
-    </>
-  );
-};
-
-const loadingScreen = (loadedGames, loadedLines) => {
-  return (
-    <div>
-      <p>Currently Loading...</p>
-      <p>
-        <span>{loadedGames}</span> Games Loaded
-      </p>
-      <p>
-        <span>{loadedLines}</span> Lines Loaded
-      </p>
-      <p>
-        <span>0/{loadedGames}</span> Games Analyzed
-      </p>
-    </div>
   );
 };
 
