@@ -16,6 +16,7 @@ const AnalysisForm = () => {
   const [status, setStatus] = React.useState("default");
   const [loadedGames, setLoadedGames] = React.useState(0);
   const [loadedLines, setLoadedLines] = React.useState(0);
+  const [analysedCount, setAnalysedCount] = React.useState(0);
 
   let minMoves: number;
 
@@ -41,9 +42,9 @@ const AnalysisForm = () => {
       return;
     }
 
-    console.log({ games, lines });
+    let stats = await runAnalysis(games, lines, colour);
 
-    // setStatus("analysis");
+    console.log(stats)
   };
 
   const streamGames = async (username, colour, minDate) => {
@@ -101,6 +102,86 @@ const AnalysisForm = () => {
     }
   };
 
+  const runAnalysis = async (games, lines, colour) => {
+    let stats = {
+      gamesInRepertoire: 0,
+      gamesNotInRepertoire: 0,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      games: {},
+    };
+
+    for (let [id, gamesArray] of Object.entries(games)) {
+      for (let game of gamesArray) {
+        setAnalysedCount(analysedCount + 1);
+        if (!lines[id]) {
+          stats.gamesNotInRepertoire++;
+          continue;
+        }
+        if (!stats.games[id]) {
+          stats.games[id] = [];
+        }
+
+        stats.gamesInRepertoire++;
+        let longestMatchingLine = 0;
+        let deviatingPlayer = "";
+        let wrongMove = "";
+        let rightMove = "";
+        let endOfBook = false;
+        for (let line of lines[id]) {
+          let matchingMoveCount = 0;
+          for (const [index, bookMove] of line.moves.entries()) {
+            if (
+              bookMove.notation.notation ==
+                game.moves[index].notation.notation &&
+              matchingMoveCount < line.moves.length - 1
+            ) {
+              matchingMoveCount++;
+            } else {
+              if (matchingMoveCount > longestMatchingLine) {
+                longestMatchingLine = matchingMoveCount;
+                deviatingPlayer =
+                  (bookMove.turn == "w" ? "white" : "black") == colour
+                    ? "Player"
+                    : "Opponent";
+                wrongMove = game.moves[index].notation.notation;
+                rightMove = bookMove.notation.notation;
+                endOfBook = matchingMoveCount == line.moves.length - 1;
+              }
+              break;
+            }
+          }
+        }
+        let result = calculateResult(game.tags.Result,colour);
+        if (result == "Win") stats.wins++;
+        if (result == "Draw") stats.draws++;
+        if (result == "Loss") stats.losses++;
+
+        let gameStats = {
+          movesInBook: Math.floor(longestMatchingLine / 2) + 1,
+          deviatingPlayer,
+          rightMove,
+          wrongMove,
+          result,
+          endOfBook,
+        };
+        stats.games[id].push(gameStats);
+      }
+    }
+    return stats;
+  };
+
+  const calculateResult = (result,colour) => {
+  if (result == "1-0") {
+    return colour == "white" ? "Win" : "Loss"
+  }
+  if (result == "0-1") {
+    return colour == "white" ? "Loss" : "Win"
+  }
+  return "Draw"
+}
+
   const identifyLines = (linesInput) => {
     let taggedLines = {};
     for (let line of linesInput) {
@@ -149,7 +230,10 @@ const AnalysisForm = () => {
         <span>{loadedLines}</span> Lines Loaded
       </p>
       <p>
-        <span>0/{loadedGames}</span> Games Analyzed
+        <span>
+          {analysedCount}/{loadedGames}
+        </span>{" "}
+        Games Analyzed
       </p>
     </div>
   ) : status == "noGames" ? (
