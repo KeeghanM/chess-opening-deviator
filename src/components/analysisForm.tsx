@@ -50,7 +50,7 @@ const AnalysisForm = () => {
   const streamGames = async (username, minDate) => {
     try {
       const response = await fetch(
-        `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
+        `https://lichess.org/api/games/user/{username}?moves=true&color={colour}&since={Date.parse(
           minDate
         )}&perfType=blitz,rapid,classical&opening=true`
       );
@@ -82,7 +82,7 @@ const AnalysisForm = () => {
   const streamLines = async (studyId) => {
     try {
       const response = await fetch(
-        `https://lichess.org/api/study/${studyId}.pgn`
+        `https://lichess.org/api/study/{studyId}.pgn`
       );
       let lines = [];
       const reader = response.body
@@ -353,6 +353,56 @@ const StatsDisplay = (props) => {
   let winPercent = percent(stats.wins, stats.gamesInRepertoire);
   let drawPercent = percent(stats.draws, stats.gamesInRepertoire);
   let lossPercent = percent(stats.losses, stats.gamesInRepertoire);
+
+  const getDeviations = (games) => {
+    let endOfBook = 0;
+    let playerDeviations = 0;
+    let opponentDeviations = 0;
+    let winsWhenPlayer = 0;
+    let lossesWhenPlayer = 0;
+    let drawsWhenPlayer = 0;
+    let winsWhenOpponent = 0;
+    let lossesWhenOpponent = 0;
+    let drawsWhenOpponent = 0;
+
+    for (let [id, gamesArray] of Object.entries(games)) {
+      for (let game of gamesArray) {
+        if (game.endOfBook) {
+          endOfBook++;
+          continue;
+        }
+
+        if (game.deviatingPlayer == "Player") {
+          playerDeviations++;
+          game.result == "Win"
+            ? winsWhenPlayer++
+            : game.result == "Loss"
+            ? lossesWhenPlayer++
+            : drawsWhenPlayer++;
+        } else {
+          opponentDeviations++;
+          game.result == "Win"
+            ? winsWhenOpponent++
+            : game.result == "Loss"
+            ? lossesWhenOpponent++
+            : drawsWhenOpponent++;
+        }
+      }
+    }
+
+    return {
+      playerDeviations,
+      opponentDeviations,
+      winsWhenOpponent,
+      winsWhenPlayer,
+      drawsWhenPlayer,
+      drawsWhenOpponent,
+      lossesWhenOpponent,
+      lossesWhenPlayer,
+      endOfBook,
+    };
+  };
+  let deviationStats = getDeviations(stats.games);
   return (
     <>
       <p>
@@ -365,6 +415,24 @@ const StatsDisplay = (props) => {
           won {winPercent}%, lost {lossPercent}%
         </span>{" "}
         and drew the remaining <span>{drawPercent}%</span>.
+      </p>
+      <p>
+        You reached the end of a book line{" "}
+        <span>{deviationStats.endOfBook} times</span>, leaving{" "}
+        <span>{stats.gamesInRepertoire - deviationStats.endOfBook} games</span>{" "}
+        to learn from.
+        <br />
+        In those games which we can learn from, you deviated from the book{" "}
+        <span> {deviationStats.playerDeviations} times</span>, compared to your
+        opponent deviating{" "}
+        <span>{deviationStats.opponentDeviations} times</span>.<br />
+        When your opponent deviated from book, you managed to{" "}
+        <span>win {deviationStats.winsWhenOpponent}</span> times which leaves{" "}
+        <span>
+          {deviationStats.opponentDeviations - deviationStats.winsWhenOpponent}{" "}
+          games
+        </span>{" "}
+        where you can learn refutations to punish your opponents mistakes.
       </p>
     </>
   );
