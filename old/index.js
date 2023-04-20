@@ -49,46 +49,7 @@ function prettyPrintLine(line) {
       move.notation.notation +
       " "
   }
-}
-
-function displayStats(stats) {
-  let totalGames = stats.gamesInRepertoire + stats.gamesNotInRepertoire
-  let winPercent = percent(stats.wins, stats.gamesInRepertoire)
-  let drawPercent = percent(stats.draws, stats.gamesInRepertoire)
-  let lossPercent = percent(stats.losses, stats.gamesInRepertoire)
-
-  let intro = document.createElement("p")
-  intro.classList.add("stats")
-  intro.innerHTML = `
-  In total you played <span>${totalGames}</span> games as ${colour}, of which <span>${stats.gamesInRepertoire}</span> matched a line in your provided repertoire.<br />
-  Of those ${stats.gamesInRepertoire} games, you <span>won ${winPercent}%, lost ${lossPercent}%</span> and drew the remaining <span>${drawPercent}%</span>.
-  `
-  statsContainer.appendChild(intro)
-
-  let deviations = document.createElement("p")
-  let deviationStats = getDeviations(stats.games)
-
-  deviations.classList.add("stats")
-  deviations.innerHTML = `
-  You reached the end of a book line <span>${
-    deviationStats.endOfBook
-  } times</span>, leaving <span>${
-    stats.gamesInRepertoire - deviationStats.endOfBook
-  } games</span> to learn from.<br />
-  In those games which we can learn from, you deviated from the book <span> ${
-    deviationStats.playerDeviations
-  } times</span>, compared to your opponent deviating <span>${
-    deviationStats.opponentDeviations
-  } times</span>.<br />
-  When your opponent deviated from book, you managed to <span>win ${
-    deviationStats.winsWhenOpponent
-  }</span> times which leaves <span>${
-    deviationStats.opponentDeviations - deviationStats.winsWhenOpponent
-  } games</span> where you can learn refutations to punish your opponents mistakes.
-  `
-  statsContainer.appendChild(deviations)
-}
-
+} 
 function displayBreakdown(stats, title, sideToShow) {
   let breakdownTitle = document.createElement("h2")
   breakdownTitle.innerText = title
@@ -139,12 +100,6 @@ function displayBreakdown(stats, title, sideToShow) {
       statsContainer.appendChild(idContainer)
     }
   }
-}
-
-function displayPunishments(stats) {
-  let punishmentsTitle = document.createElement("h2")
-  punishmentsTitle.innerText = "Punishing opponents mistakes"
-  statsContainer.appendChild(punishmentsTitle)
 }
 
 function getDeviations(games) {

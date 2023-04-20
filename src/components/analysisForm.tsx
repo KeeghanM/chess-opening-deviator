@@ -1,5 +1,6 @@
 import React, { FormEvent } from "react";
 import { parse } from "@mliebelt/pgn-parser";
+import ECO  from "../utils/eco"
 interface CustomElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
   studyId: HTMLInputElement;
@@ -50,7 +51,7 @@ const AnalysisForm = () => {
   const streamGames = async (username, minDate) => {
     try {
       const response = await fetch(
-        `https://lichess.org/api/games/user/{username}?moves=true&color={colour}&since={Date.parse(
+        `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
           minDate
         )}&perfType=blitz,rapid,classical&opening=true`
       );
@@ -82,7 +83,7 @@ const AnalysisForm = () => {
   const streamLines = async (studyId) => {
     try {
       const response = await fetch(
-        `https://lichess.org/api/study/{studyId}.pgn`
+        `https://lichess.org/api/study/${studyId}.pgn`
       );
       let lines = [];
       const reader = response.body
@@ -320,7 +321,7 @@ const AnalysisForm = () => {
             type="number"
             id="minMoves"
             name="minMoves"
-            value="6"
+            defaultValue="6"
             min="2"
             max="20"
             required
@@ -434,6 +435,60 @@ const StatsDisplay = (props) => {
         </span>{" "}
         where you can learn refutations to punish your opponents mistakes.
       </p>
+      <Breakdown
+        stats={stats}
+        colour={colour}
+        title={"Learn from your mistakes"}
+        sideToShow={"Player"}
+      />
+      <Breakdown
+        stats={stats}
+        colour={colour}
+        title={"Punish your opponents"}
+        sideToShow={"Opponent"}
+      />
+    </>
+  );
+};
+
+const Breakdown = (props) => {
+  let stats = props.stats;
+  let sideToShow = props.sideToShow;
+  let colour = props.colour;
+
+  return (
+    <>
+      <h2>{props.title}</h2>
+      {Object.entries(stats.games).map(([id, gamesArray], i) => (
+        <div key={id}>
+            <h3>{ECO[id.toLowerCase()]}</h3>
+          {gamesArray.map((game, i) => {
+            if (game.deviatingPlayer != sideToShow || game.endOfBook)
+              return <></>;
+            let ellipses = "";
+            if (sideToShow == "Player") {
+              ellipses = colour == "white" ? ". " : "... ";
+            } else {
+              ellipses = colour == "white" ? "... " : ". ";
+            }
+            let moveNumber = game.movesInBook + ellipses;
+
+            return sideToShow == "Player" ? (
+              <p>
+                You played {moveNumber}
+                {game.wrongMove}, correct was {moveNumber}
+                {game.rightMove}
+              </p>
+            ) : (
+              <p>
+                You didn't win when {moveNumber}
+                {game.wrongMove} was played, consider adding a refutation to
+                your repertoire
+              </p>
+            );
+          })}
+        </div>
+      ))}
     </>
   );
 };
