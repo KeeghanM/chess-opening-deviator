@@ -17,6 +17,8 @@ const AnalysisForm = () => {
   const [loadedGames, setLoadedGames] = React.useState(0);
   const [loadedLines, setLoadedLines] = React.useState(0);
 
+  let minMoves: number;
+
   const handleSubmit = async (event: FormEvent<CustomForm>) => {
     event.preventDefault();
     setStatus("loading");
@@ -25,29 +27,31 @@ const AnalysisForm = () => {
     let studyId = target.studyId.value;
     let colour = target.colour.value;
     let minDate = target.minDate.value;
-    let minMoves = parseInt(target.minMoves.value);
+    minMoves = parseInt(target.minMoves.value);
 
     let games = await streamGames(username, colour, minDate);
-    if (games?.length == 0) {
+    if (!games || Object.keys(games).length == 0) {
       setStatus("noGames");
       return;
     }
 
     let lines = await streamLines(studyId);
-    if (lines?.length == 0) {
+    if (!lines || Object.keys(lines).length == 0) {
       setStatus("noGames");
       return;
     }
 
     console.log({ games, lines });
 
-    setStatus("analysis");
+    // setStatus("analysis");
   };
 
   const streamGames = async (username, colour, minDate) => {
     try {
       const response = await fetch(
-        `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(minDate)}&perfType=blitz,rapid,classical&opening=true`
+        `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
+          minDate
+        )}&perfType=blitz,rapid,classical&opening=true`
       );
       if (!response.body) {
         return;
@@ -68,7 +72,7 @@ const AnalysisForm = () => {
           games.push(game);
         }
       }
-      return games;
+      return identifyLines(games);
     } catch (error) {
       console.log(error);
     }
@@ -91,10 +95,31 @@ const AnalysisForm = () => {
           recursiveParse([], line.moves, line.tags, lines);
         }
       }
-      return lines;
+      return identifyLines(lines);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const identifyLines = (linesInput) => {
+    let taggedLines = {};
+    for (let line of linesInput) {
+      if (line.moves.length <= minMoves) continue;
+      let id = getLineId(line.moves);
+      if (!Object.keys(taggedLines).includes(id)) {
+        taggedLines[id] = [];
+      }
+      taggedLines[id].push(line);
+    }
+    return taggedLines;
+  };
+
+  const getLineId = (moves) => {
+    let id = "";
+    for (let i = 0; i < minMoves; i++) {
+      id += moves[i].notation.notation;
+    }
+    return id;
   };
 
   const recursiveParse = (lineSoFar, newMoves, tags, outputArray) => {
@@ -179,7 +204,12 @@ const AnalysisForm = () => {
               <label htmlFor="white">White</label>
             </span>
             <span className="flex items-center gap-2">
-              <input type="radio" id="black" name="colour" defaultValue="black" />
+              <input
+                type="radio"
+                id="black"
+                name="colour"
+                defaultValue="black"
+              />
               <label htmlFor="black">Black</label>
             </span>
           </span>

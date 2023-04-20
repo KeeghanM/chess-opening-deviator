@@ -51,18 +51,7 @@ function prettyPrintLine(line) {
   }
 }
 
-function identifyLines(linesInput) {
-  let taggedLines = {}
-  for (let line of linesInput) {
-    if (line.moves.length <= minMoves) continue
-    let id = getLineId(line.moves)
-    if (!Object.keys(taggedLines).includes(id)) {
-      taggedLines[id] = []
-    }
-    taggedLines[id].push(line)
-  }
-  return taggedLines
-}
+
 
 function getLineId(moves) {
   let id = ""
