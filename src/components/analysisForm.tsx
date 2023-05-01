@@ -16,7 +16,8 @@ interface CustomForm extends HTMLFormElement {
 const AnalysisForm = () => {
   const [status, setStatus] = React.useState("default");
   const [stats, setStats] = React.useState();
-  const [colour, setColour] = React.useState("");
+  const [colourState, setColour] = React.useState("");
+  let colour = ""
   const [loadedGames, setLoadedGames] = React.useState(0);
   const [loadedLines, setLoadedLines] = React.useState(0);
   const [analysedCount, setAnalysedCount] = React.useState(0);
@@ -30,6 +31,7 @@ const AnalysisForm = () => {
     let username = target.username.value;
     let studyId = target.studyId.value;
     setColour(target.colour.value);
+    colour = target.colour.value;
     let minDate = target.minDate.value;
     minMoves = parseInt(target.minMoves.value);
 
@@ -222,7 +224,7 @@ const AnalysisForm = () => {
   };
 
   return stats ? (
-    <StatsDisplay stats={stats} colour={colour} />
+    <StatsDisplay stats={stats} colour={colourState} />
   ) : status == "loading" ? (
     <div>
       <p>Currently Loading...</p>
@@ -404,7 +406,9 @@ const StatsDisplay = (props) => {
     };
   };
   let deviationStats = getDeviations(stats.games);
+
   return (
+    stats.gamesInRepertoire > 0 ?
     <>
       <p>
         In total you played <span>{totalGames}</span> games as {colour}, of
@@ -447,6 +451,12 @@ const StatsDisplay = (props) => {
         title={"Punish your opponents"}
         sideToShow={"Opponent"}
       />
+    </> : <>
+      <p>
+        In total you played <span>{totalGames}</span> games as {colour}, however none matched your provided repertoire.
+        <br />
+        Either try a different study id, or adjust the half move count.
+        </p>
     </>
   );
 };
@@ -472,7 +482,6 @@ const Breakdown = (props) => {
               ellipses = colour == "white" ? "... " : ". ";
             }
             let moveNumber = game.movesInBook + ellipses;
-
             return sideToShow == "Player" ? (
               <p>
                 You played {moveNumber}
