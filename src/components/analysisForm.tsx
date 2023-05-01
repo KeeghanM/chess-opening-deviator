@@ -322,7 +322,7 @@ const AnalysisForm = () => {
             id="minDate"
             name="minDate"
             required
-            className="dark:bg-slate-500"
+            className="border border-orange-500 px-2 py-1 dark:bg-slate-500"
           />
         </fieldset>
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">

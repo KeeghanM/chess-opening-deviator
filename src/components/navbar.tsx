@@ -16,16 +16,10 @@ const NavBar = () => {
         <li>
           <Link href="/" className="hover:text-orange-600">Home</Link>
         </li>
-        <li>
-          <Link href="/about" className="hover:text-orange-600">About</Link>
-        </li>
-        <li>
-          <Link href="/contact" className="hover:text-orange-600">Contact</Link>
-        </li>
       </ul>
       <div className="flex items-center gap-4">
         
-          <Link href="/sign-in" className="px-4 py-2 bg-slate-800 text-slate-200 dark:bg-slate-200 dark:text-slate-800 rounded-xl font-bold text-xl">Sign In</Link>
+          <Link href="/sign-in" className="px-4 py-2 bg-slate-800 text-slate-200 dark:bg-slate-200 dark:text-slate-800 rounded-xl font-bold text-xl hover:bg-orange-600 dark:hover:bg-orange-600">Sign In</Link>
         <button
           onClick={() =>
             currentTheme == "dark" ? setTheme("light") : setTheme("dark")

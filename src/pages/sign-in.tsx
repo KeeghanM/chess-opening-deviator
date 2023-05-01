@@ -1,6 +1,7 @@
 
 import { type NextPage } from "next";
 import Head from "next/head";
+import NavBar from "~/components/navbar";
 
 const Login: NextPage = () => {
   return (
@@ -15,6 +16,7 @@ const Login: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <NavBar />
       <main className="flex justify-center items-center h-[100vh]">
         LOGIN WITH LICHESS
         </main>
