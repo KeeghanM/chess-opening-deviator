@@ -1,6 +1,7 @@
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import SignInButton from "./signinButton";
 
 const NavBar = () => {
   const { systemTheme, theme, setTheme } = useTheme();
@@ -19,7 +20,7 @@ const NavBar = () => {
       </ul>
       <div className="flex items-center gap-4">
         
-          <Link href="/sign-in" className="px-4 py-2 bg-slate-800 text-slate-200 dark:bg-slate-200 dark:text-slate-800 rounded-xl font-bold text-xl hover:bg-orange-600 dark:hover:bg-orange-600">Sign In</Link>
+          <SignInButton />
         <button
           onClick={() =>
             currentTheme == "dark" ? setTheme("light") : setTheme("dark")

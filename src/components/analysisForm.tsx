@@ -1,4 +1,4 @@
-import React, { FormEvent } from "react";
+import React, { FormEvent, useEffect } from "react";
 import { parse } from "@mliebelt/pgn-parser";
 import ECO from "../utils/eco";
 interface CustomElements extends HTMLFormControlsCollection {
@@ -14,6 +14,12 @@ interface CustomForm extends HTMLFormElement {
 }
 
 const AnalysisForm = () => {
+  const [accessToken,setAccessToken] = React.useState()
+  useEffect(()=>{
+    let access_token = localStorage.getItem('at')
+    if(access_token != "undefined") setAccessToken(JSON.parse(access_token))
+  },[])
+
   const [status, setStatus] = React.useState("default");
   const [stats, setStats] = React.useState();
   const [colourState, setColour] = React.useState("");
@@ -52,10 +58,14 @@ const AnalysisForm = () => {
 
   const streamGames = async (username, minDate) => {
     try {
+      let options = {}
+      if(accessToken) {
+        options = { headers: {Authentication: `Bearer ${accessToken}`}}
+      }
       const response = await fetch(
         `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
           minDate
-        )}&perfType=blitz,rapid,classical&opening=true`
+        )}&perfType=blitz,rapid,classical&opening=true`,options
       );
       if (!response.body) {
         return;
@@ -84,8 +94,13 @@ const AnalysisForm = () => {
 
   const streamLines = async (studyId) => {
     try {
+      let options = {}
+      if(accessToken) {
+        options = { headers: {Authentication: `Bearer ${accessToken}`}}
+      }
+      console.log(options)
       const response = await fetch(
-        `https://lichess.org/api/study/${studyId}.pgn`
+        `https://lichess.org/api/study/${studyId}.pgn`,options
       );
       let lines = [];
       const reader = response.body
