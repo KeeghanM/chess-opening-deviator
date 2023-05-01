@@ -1,13 +1,10 @@
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
-import { dark } from "@clerk/themes";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 
 const NavBar = () => {
   const { systemTheme, theme, setTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
-  const appearance = currentTheme == "dark" ? { baseTheme: dark } : {};
   return (
     <nav className="flex h-20 w-full items-center justify-between bg-slate-200 px-12 dark:bg-slate-800">
       <ul className="flex items-center gap-4 text-xl ">
@@ -27,12 +24,8 @@ const NavBar = () => {
         </li>
       </ul>
       <div className="flex items-center gap-4">
-        <SignedIn>
-          <UserButton appearance={appearance} />
-        </SignedIn>
-        <SignedOut>
+        
           <Link href="/sign-in" className="px-4 py-2 bg-slate-800 text-slate-200 dark:bg-slate-200 dark:text-slate-800 rounded-xl font-bold text-xl">Sign In</Link>
-        </SignedOut>
         <button
           onClick={() =>
             currentTheme == "dark" ? setTheme("light") : setTheme("dark")
