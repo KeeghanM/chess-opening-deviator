@@ -1,6 +1,6 @@
 import React, { FormEvent } from "react";
 import { parse } from "@mliebelt/pgn-parser";
-import ECO  from "../utils/eco"
+import ECO from "../utils/eco";
 interface CustomElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
   studyId: HTMLInputElement;
@@ -17,7 +17,7 @@ const AnalysisForm = () => {
   const [status, setStatus] = React.useState("default");
   const [stats, setStats] = React.useState();
   const [colourState, setColour] = React.useState("");
-  let colour = ""
+  let colour = "";
   const [loadedGames, setLoadedGames] = React.useState(0);
   const [loadedLines, setLoadedLines] = React.useState(0);
   const [analysedCount, setAnalysedCount] = React.useState(0);
@@ -43,7 +43,7 @@ const AnalysisForm = () => {
 
     let lines = await streamLines(studyId);
     if (!lines || Object.keys(lines).length == 0) {
-      setStatus("noGames");
+      setStatus("noLines");
       return;
     }
 
@@ -223,8 +223,13 @@ const AnalysisForm = () => {
     outputArray.push(line);
   };
 
+  const reset = () => {
+    setStatus("default");
+    setStats(undefined);
+  };
+
   return stats ? (
-    <StatsDisplay stats={stats} colour={colourState} />
+    <StatsDisplay stats={stats} colour={colourState} reset={reset} />
   ) : status == "loading" ? (
     <div>
       <p>Currently Loading...</p>
@@ -241,10 +246,15 @@ const AnalysisForm = () => {
         Games Analyzed
       </p>
     </div>
-  ) : status == "noGames" ? (
+  ) : status == "noGames" || status == "noLines" ? (
     <div>
-      <p>Unfortunately, no games found</p>
-      <button onClick={() => setStatus("default")}></button>
+      <p>Unfortunately, no {status == "noGames" ? "games" : "lines"} found. Try a different {status == "noGames" ? "player or date range" : "study ID"}.</p>
+      <button
+        onClick={reset}
+        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800"
+      >
+        Reset Form
+      </button>
     </div>
   ) : (
     <>
@@ -407,8 +417,7 @@ const StatsDisplay = (props) => {
   };
   let deviationStats = getDeviations(stats.games);
 
-  return (
-    stats.gamesInRepertoire > 0 ?
+  return stats.gamesInRepertoire > 0 ? (
     <>
       <p>
         In total you played <span>{totalGames}</span> games as {colour}, of
@@ -451,12 +460,28 @@ const StatsDisplay = (props) => {
         title={"Punish your opponents"}
         sideToShow={"Opponent"}
       />
-    </> : <>
+      <button
+        onClick={props.reset}
+        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800"
+      >
+        Reset Form
+      </button>
+    </>
+  ) : (
+    <>
       <p>
-        In total you played <span>{totalGames}</span> games as {colour}, however none matched your provided repertoire.
+        In total you played <span>{totalGames}</span> games as {colour}, however
+        none matched your provided repertoire.
         <br />
         Either try a different study id, or adjust the half move count.
-        </p>
+        <br />
+        <button
+          onClick={props.reset}
+          className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800"
+        >
+          Reset Form
+        </button>
+      </p>
     </>
   );
 };
@@ -471,7 +496,7 @@ const Breakdown = (props) => {
       <h2>{props.title}</h2>
       {Object.entries(stats.games).map(([id, gamesArray], i) => (
         <div key={id}>
-            <h3>{ECO[id.toLowerCase()]}</h3>
+          <h3>{ECO[id.toLowerCase()]}</h3>
           {gamesArray.map((game, i) => {
             if (game.deviatingPlayer != sideToShow || game.endOfBook)
               return <></>;
@@ -505,5 +530,4 @@ const Breakdown = (props) => {
 function percent(number, of) {
   return Math.round((number / of) * 100);
 }
-
 export default AnalysisForm;
