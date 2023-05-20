@@ -138,10 +138,9 @@ const AnalysisForm = () => {
     games: { [key: string]: any[] },
     lines: { [key: string]: any[] }
   ) => {
-
-    if(!games || !lines){
+    if (!games || !lines) {
       throw new Error("Missing Games or Lines");
-      return
+      return;
     }
 
     let stats: StatsType = {
@@ -207,8 +206,8 @@ const AnalysisForm = () => {
           result,
           endOfBook,
         };
-        if(!stats.games[id]){
-          stats.games[id] = []
+        if (!stats.games[id]) {
+          stats.games[id] = [];
         }
         stats.games[id]!.push(gameStats);
       }
@@ -216,7 +215,7 @@ const AnalysisForm = () => {
     return stats;
   };
 
-  const calculateResult = (result:string) => {
+  const calculateResult = (result: string) => {
     if (result == "1-0") {
       return colour == "white" ? "Win" : "Loss";
     }
@@ -226,8 +225,8 @@ const AnalysisForm = () => {
     return "Draw";
   };
 
-  const identifyLines = (linesInput:any[]) => {
-    let taggedLines:{[key: string]: any[]} = {};
+  const identifyLines = (linesInput: any[]) => {
+    let taggedLines: { [key: string]: any[] } = {};
     for (let line of linesInput) {
       if (line.moves.length <= minMoves) continue;
       let id = getLineId(line.moves);
@@ -239,7 +238,7 @@ const AnalysisForm = () => {
     return taggedLines;
   };
 
-  const getLineId = (moves:any[]) => {
+  const getLineId = (moves: any[]) => {
     let id = "";
     for (let i = 0; i < minMoves; i++) {
       id += moves[i].notation.notation;
@@ -247,7 +246,12 @@ const AnalysisForm = () => {
     return id;
   };
 
-  const recursiveParse = (lineSoFar:any, newMoves:any, tags:any, outputArray:any[]) => {
+  const recursiveParse = (
+    lineSoFar: any,
+    newMoves: any,
+    tags: any,
+    outputArray: any[]
+  ) => {
     setLoadedLines(loadedLines + 1);
 
     let lineArray = JSON.parse(JSON.stringify(lineSoFar)); // Deep Clone the array
@@ -403,7 +407,7 @@ const AnalysisForm = () => {
   );
 };
 
-const StatsDisplay = (props:any) => {
+const StatsDisplay = (props: any) => {
   let stats = props.stats;
   let colour = props.colour;
   let totalGames = stats.gamesInRepertoire + stats.gamesNotInRepertoire;
@@ -411,7 +415,7 @@ const StatsDisplay = (props:any) => {
   let drawPercent = percent(stats.draws, stats.gamesInRepertoire);
   let lossPercent = percent(stats.losses, stats.gamesInRepertoire);
 
-  const getDeviations = (games:{[key: string]: any[]}) => {
+  const getDeviations = (games: { [key: string]: any[] }) => {
     let endOfBook = 0;
     let playerDeviations = 0;
     let opponentDeviations = 0;
@@ -530,47 +534,78 @@ const StatsDisplay = (props:any) => {
   );
 };
 
-const Breakdown = (props:any) => {
-  let stats:StatsType = props.stats;
+const Breakdown = (props: any) => {
+  let stats: StatsType = props.stats;
   let sideToShow = props.sideToShow;
   let colour = props.colour;
+
   return (
     <>
       <h2>{props.title}</h2>
       {Object.entries(stats.games).map(([id, gamesArray], i) => (
         <div key={id}>
           <h3>{ECO[id.toLowerCase()]}</h3>
-          {gamesArray.map((game, i) => {
-            if (game.deviatingPlayer != sideToShow || game.endOfBook)
-              return <></>;
-            let ellipses = "";
-            if (sideToShow == "Player") {
-              ellipses = colour == "white" ? ". " : "... ";
-            } else {
-              ellipses = colour == "white" ? "... " : ". ";
-            }
-            let moveNumber = game.movesInBook + ellipses;
-            return sideToShow == "Player" ? (
-              <p>
-                You played {moveNumber}
-                {game.wrongMove}, correct was {moveNumber}
-                {game.rightMove}
-              </p>
-            ) : (
-              <p>
-                You didn't win when {moveNumber}
-                {game.wrongMove} was played, consider adding a refutation to
-                your repertoire
-              </p>
-            );
-          })}
+          {gamesArray
+            .reduce((accumulator: any[], game: any) => {
+              const foundItem = accumulator.find((obj: any) => {
+                return (
+                  obj.deviatingPlayer === game.deviatingPlayer &&
+                  obj.endOfBook === game.endOfBook &&
+                  obj.movesInBook === game.movesInBook &&
+                  obj.result === game.result &&
+                  obj.rightMove === game.rightMove &&
+                  obj.wrongMove === game.wrongMove
+                );
+              });
+
+              if (foundItem) {
+                foundItem.count++;
+              } else {
+                accumulator.push({ ...game, count: 1 });
+              }
+
+              return accumulator;
+            }, [])
+            .sort((a, b) => {
+              if (a.count !== b.count) {
+    return b.count - a.count;
+  }
+  if (a.wrongMove !== b.wrongMove) {
+    return a.wrongMove - b.wrongMove;
+  }
+  return a.rightMove - b.rightMove;
+            })
+            .map((game, i) => {
+              if (game.deviatingPlayer != sideToShow || game.endOfBook)
+                return <></>;
+              let ellipses = "";
+              if (sideToShow == "Player") {
+                ellipses = colour == "white" ? ". " : "... ";
+              } else {
+                ellipses = colour == "white" ? "... " : ". ";
+              }
+              let moveNumber = game.movesInBook + ellipses;
+              return sideToShow == "Player" ? (
+                <p key={i}>
+                  {game.count} times you played {moveNumber}
+                  {game.wrongMove}, correct was {moveNumber}
+                  {game.rightMove}
+                </p>
+              ) : (
+                <p key={i}>
+                  {game.count} times you didn't win when {moveNumber}
+                  {game.wrongMove} was played, consider adding a refutation to
+                  your repertoire
+                </p>
+              );
+            })}
         </div>
       ))}
     </>
   );
 };
 
-function percent(number:number, of:number) {
+function percent(number: number, of: number) {
   return Math.round((number / of) * 100);
 }
 export default AnalysisForm;
