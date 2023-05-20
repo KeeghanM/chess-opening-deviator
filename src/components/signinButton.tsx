@@ -19,8 +19,20 @@ const SignInButton = () => {
     window.location.assign(oauthUrl);
   };
 
+  const logout = () => {
+    localStorage.removeItem("at")
+    localStorage.removeItem("st")
+    localStorage.removeItem("cv")
+    setValidated(false)
+  }
+
   return (
-    validated ? <></> :
+    validated ? <button
+      onClick={logout}
+      className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 hover:bg-orange-600 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-orange-600"
+    >
+      Logout
+    </button> :
     <button
       onClick={login}
       className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 hover:bg-orange-600 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-orange-600"

@@ -1,9 +1,15 @@
 import { type NextPage } from "next";
 import Head from "next/head";
+import { useEffect, useState } from "react";
 import AnalysisForm from "~/components/analysisForm";
 import NavBar from "~/components/navbar";
 
 const Home: NextPage = () => {
+  const [validated,setValidated] = useState(false)
+  useEffect(()=>{
+    let access_token = localStorage.getItem('at')
+    if(access_token) setValidated(true)
+  },[])
   return (
     <>
       <Head>
@@ -20,7 +26,7 @@ const Home: NextPage = () => {
       <section className="px-6 py-4 md:px-24 md:py-12 md:flex justify-between">
       <main className="min-w-[50vw]">
         <h1 className="text-4xl text-slate-800 dark:text-slate-200 pb-4">Chess Opening Deviation Analysis</h1>
-        <p className="italic">For faster game loading, and analysis of private studies, please log in to your LiChess account in the top right.</p>
+        {!validated ? <p className="italic">For faster game loading, and analysis of private studies, please log in to your LiChess account in the top right.</p> : <></>}
         <AnalysisForm />
         <div id="stats-container"></div>
       </main>
