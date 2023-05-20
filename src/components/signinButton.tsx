@@ -9,11 +9,12 @@ const SignInButton = () => {
     if(access_token) setValidated(true)
   },[])
   const login = () => {
+    const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI || '';
     let uuid = uuidv4();
     let hash = crypto.createHash("sha256").update(uuid).digest("hex");
     let codeVerifier = Buffer.from(hash).toString("base64");
     let state = uuidv4();
-    let oauthUrl = `https://lichess.org/oauth?response_type=code&client_id=openingDeviatOr.app&redirect_uri=http://localhost:3000/lichess/&code_challenge_method=S256&code_challenge=${codeVerifier}&scope=study:read&state=${state}`;
+    let oauthUrl = `https://lichess.org/oauth?response_type=code&client_id=openingDeviatOr.app&redirect_uri=${redirectUri}&code_challenge_method=S256&code_challenge=${codeVerifier}&scope=study:read&state=${state}`;
     localStorage.setItem("cv", JSON.stringify(codeVerifier));
     localStorage.setItem("st", JSON.stringify(state));
     window.location.assign(oauthUrl);

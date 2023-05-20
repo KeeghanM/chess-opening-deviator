@@ -25,12 +25,12 @@ const Home: NextPage = () => {
       <NavBar />
 
       <section className="px-6 py-4 md:px-24 md:py-12">
-        <h1 className="pb-6 text-4xl font-extrabold underline text-slate-800 dark:text-slate-200">
+        <h1 className="pb-6 text-4xl font-extrabold text-slate-800 underline dark:text-slate-200">
           Chess Opening Deviation Analysis
         </h1>
         <div className="md:flex md:gap-24 ">
           <aside className="md:max-w-[30vw]">
-            <h2 className="text-2xl font-bold mb-2">Instructions to use</h2>
+            <h2 className="mb-2 text-2xl font-bold">Instructions to use</h2>
             <ul>
               <li className="mb-4">
                 <h3 className="font-bold">1. Enter LiChess Username</h3>
@@ -85,15 +85,15 @@ const Home: NextPage = () => {
             </ul>
           </aside>
           <main>
+            <AnalysisForm />
             {!validated ? (
               <p className="italic">
                 For faster game loading, and analysis of private studies, please
-                log in to your LiChess account in the top right.
+                log in to your LiChess Account using the menu button.
               </p>
             ) : (
               <></>
             )}
-            <AnalysisForm />
             <div id="stats-container"></div>
           </main>
         </div>

@@ -9,6 +9,8 @@ const LiChess: NextPage = () => {
   const [errorState, setError] = useState("");
   useEffect(() => {
     if (router.isReady) {
+      const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI || "";
+
       let codeVerifier = JSON.parse(localStorage.getItem("cv") as string);
       let state = JSON.parse(localStorage.getItem("st") as string);
       const code = router.query["code"];
@@ -30,7 +32,7 @@ const LiChess: NextPage = () => {
             grant_type: "authorization_code",
             code: code,
             code_verifier: codeVerifier,
-            redirect_uri: "http://localhost:3000/lichess/",
+            redirect_uri: redirectUri,
             client_id: "openingDeviatOr.app",
           }),
         };

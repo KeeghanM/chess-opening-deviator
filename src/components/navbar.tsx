@@ -15,7 +15,7 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="flex h-20 items-center justify-between  bg-slate-200 px-8 py-4 dark:bg-slate-800">
+    <nav className="flex h-20 items-center justify-between  bg-slate-200 px-8 py-4 dark:bg-slate-800 sticky top-0">
       <Link
         href="/"
         className="text-xl font-bold text-orange-500 md:mr-8 md:text-4xl"
@@ -35,7 +35,7 @@ const NavBar = () => {
             onClick={handleMenuToggle}
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              <path strokeLinecap="round" strokeLinejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
         )}
@@ -81,9 +81,9 @@ const NavBar = () => {
             stroke="currentColor"
           >
             <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
               d="M4 6h16M4 12h16M4 18h16"
             ></path>
           </svg>
