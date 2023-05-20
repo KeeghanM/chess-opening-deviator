@@ -10,12 +10,12 @@ const NavBar = () => {
     <nav className="flex h-20 w-full items-center justify-between bg-slate-200 px-12 dark:bg-slate-800">
       <ul className="flex items-center gap-4 text-xl ">
         <li>
-          <Link href="/" className="pr-12 text-4xl text-orange-400 font-bold">
+          <Link href="/" className="pr-12 text-4xl text-orange-500 font-bold">
             Opening DeviatOr
           </Link>
         </li>
         <li>
-          <Link href="/" className="hover:text-orange-600">Home</Link>
+          <Link href="/" className="hover:text-orange-500">Home</Link>
         </li>
       </ul>
       <div className="flex items-center gap-4">

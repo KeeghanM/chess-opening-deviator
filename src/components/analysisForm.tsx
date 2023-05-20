@@ -299,7 +299,7 @@ const AnalysisForm = () => {
       </p>
       <button
         onClick={reset}
-        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800"
+        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800 mt-2"
       >
         Reset Form
       </button>
@@ -391,7 +391,7 @@ const AnalysisForm = () => {
         <fieldset className="flex gap-2">
           <button
             type="submit"
-            className="rounded-xl bg-orange-400 px-2 py-2 text-xl font-bold text-slate-800"
+            className="rounded-xl bg-orange-500 px-2 py-2 text-xl font-bold text-slate-800"
           >
             Run Analysis
           </button>
@@ -466,7 +466,7 @@ const StatsDisplay = (props: any) => {
   let deviationStats = getDeviations(stats.games);
 
   return stats.gamesInRepertoire > 0 ? (
-    <>
+    <div className="stats">
       <p>
         In total you played <span>{totalGames}</span> games as {colour}, of
         which <span>{stats.gamesInRepertoire}</span> matched a line in your
@@ -506,15 +506,16 @@ const StatsDisplay = (props: any) => {
         stats={stats}
         colour={colour}
         title={"Punish your opponents"}
+        sub={"Consider adding refutations to your repertoire"}
         sideToShow={"Opponent"}
       />
       <button
         onClick={props.reset}
-        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800"
+        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800 mt-2 hover:bg-orange-500"
       >
         Reset Form
       </button>
-    </>
+    </div>
   ) : (
     <>
       <p>
@@ -541,10 +542,11 @@ const Breakdown = (props: any) => {
 
   return (
     <>
-      <h2>{props.title}</h2>
+      <h2 className="mt-4 text-2xl font-bold">{props.title}</h2>
+      {props.sub ? <h3 className="italic">{props.sub}</h3> : <></>}
       {Object.entries(stats.games).map(([id, gamesArray], i) => (
         <div key={id}>
-          <h3>{ECO[id.toLowerCase()]}</h3>
+          <h4 className="mt-1 font-bold">{ECO[id.toLowerCase()]}</h4>
           {gamesArray
             .reduce((accumulator: any[], game: any) => {
               const foundItem = accumulator.find((obj: any) => {
@@ -585,17 +587,31 @@ const Breakdown = (props: any) => {
                 ellipses = colour == "white" ? "... " : ". ";
               }
               let moveNumber = game.movesInBook + ellipses;
-              return sideToShow == "Player" ? (
+              return (
                 <p key={i}>
-                  {game.count} times you played {moveNumber}
-                  {game.wrongMove}, correct was {moveNumber}
-                  {game.rightMove}
-                </p>
-              ) : (
-                <p key={i}>
-                  {game.count} times you didn't win when {moveNumber}
-                  {game.wrongMove} was played, consider adding a refutation to
-                  your repertoire
+                  {sideToShow == "Player" ? (
+                    <>
+                      <span>{game.count}</span> times you played{" "}
+                      <span>
+                        {moveNumber}
+                        {game.wrongMove}
+                      </span>
+                      , correct was{" "}
+                      <span>
+                        {moveNumber}
+                        {game.rightMove}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{game.count}</span> times you didn't win when{" "}
+                      <span>
+                        {moveNumber}
+                        {game.wrongMove}
+                      </span>{" "}
+                      was played
+                    </>
+                  )}
                 </p>
               );
             })}
