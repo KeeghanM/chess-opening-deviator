@@ -1,6 +1,9 @@
-import React, { FormEvent, useEffect } from "react";
-import { ParseTree, parse } from "@mliebelt/pgn-parser";
+import {  useEffect, useState } from "react";
+import {  parse } from "@mliebelt/pgn-parser";
 import ECO from "../utils/eco";
+
+import type { FormEvent } from "react";
+import type { ParseTree } from "@mliebelt/pgn-parser";
 interface CustomElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
   studyId: HTMLInputElement;
@@ -23,19 +26,19 @@ type StatsType = {
 };
 
 const AnalysisForm = () => {
-  const [accessToken, setAccessToken] = React.useState<any>();
+  const [accessToken, setAccessToken] = useState<any>();
   useEffect(() => {
     let access_token = localStorage.getItem("at") as string;
     if (access_token != "undefined") setAccessToken(JSON.parse(access_token));
   }, []);
 
-  const [status, setStatus] = React.useState<any>("default");
-  const [stats, setStats] = React.useState<any>();
-  const [colourState, setColour] = React.useState<any>("");
+  const [status, setStatus] = useState<any>("default");
+  const [stats, setStats] = useState<any>();
+  const [colourState, setColour] = useState<any>("");
   let colour = "";
-  const [loadedGames, setLoadedGames] = React.useState<any>(0);
-  const [loadedLines, setLoadedLines] = React.useState<any>(0);
-  const [analysedCount, setAnalysedCount] = React.useState<any>(0);
+  const [loadedGames, setLoadedGames] = useState<any>(0);
+  const [loadedLines, setLoadedLines] = useState<any>(0);
+  const [analysedCount, setAnalysedCount] = useState<any>(0);
 
   let minMoves: number;
 
