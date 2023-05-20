@@ -568,12 +568,12 @@ const Breakdown = (props: any) => {
             }, [])
             .sort((a, b) => {
               if (a.count !== b.count) {
-    return b.count - a.count;
-  }
-  if (a.wrongMove !== b.wrongMove) {
-    return a.wrongMove - b.wrongMove;
-  }
-  return a.rightMove - b.rightMove;
+                return b.count - a.count;
+              }
+              if (a.wrongMove !== b.wrongMove) {
+                return a.wrongMove - b.wrongMove;
+              }
+              return a.rightMove - b.rightMove;
             })
             .map((game, i) => {
               if (game.deviatingPlayer != sideToShow || game.endOfBook)
