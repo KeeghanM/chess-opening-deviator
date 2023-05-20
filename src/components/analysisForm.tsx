@@ -1,5 +1,5 @@
 import React, { FormEvent, useEffect } from "react";
-import { parse } from "@mliebelt/pgn-parser";
+import { ParseTree, parse } from "@mliebelt/pgn-parser";
 import ECO from "../utils/eco";
 interface CustomElements extends HTMLFormControlsCollection {
   username: HTMLInputElement;
@@ -13,20 +13,29 @@ interface CustomForm extends HTMLFormElement {
   readonly elements: CustomElements;
 }
 
-const AnalysisForm = () => {
-  const [accessToken,setAccessToken] = React.useState()
-  useEffect(()=>{
-    let access_token = localStorage.getItem('at')
-    if(access_token != "undefined") setAccessToken(JSON.parse(access_token))
-  },[])
+type StatsType = {
+  gamesInRepertoire: number;
+  gamesNotInRepertoire: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  games: { [key: string]: any[] };
+};
 
-  const [status, setStatus] = React.useState("default");
-  const [stats, setStats] = React.useState();
-  const [colourState, setColour] = React.useState("");
+const AnalysisForm = () => {
+  const [accessToken, setAccessToken] = React.useState<any>();
+  useEffect(() => {
+    let access_token = localStorage.getItem("at") as string;
+    if (access_token != "undefined") setAccessToken(JSON.parse(access_token));
+  }, []);
+
+  const [status, setStatus] = React.useState<any>("default");
+  const [stats, setStats] = React.useState<any>();
+  const [colourState, setColour] = React.useState<any>("");
   let colour = "";
-  const [loadedGames, setLoadedGames] = React.useState(0);
-  const [loadedLines, setLoadedLines] = React.useState(0);
-  const [analysedCount, setAnalysedCount] = React.useState(0);
+  const [loadedGames, setLoadedGames] = React.useState<any>(0);
+  const [loadedLines, setLoadedLines] = React.useState<any>(0);
+  const [analysedCount, setAnalysedCount] = React.useState<any>(0);
 
   let minMoves: number;
 
@@ -56,16 +65,17 @@ const AnalysisForm = () => {
     setStats(await runAnalysis(games, lines));
   };
 
-  const streamGames = async (username, minDate) => {
+  const streamGames = async (username: string, minDate: string) => {
     try {
-      let options = {}
-      if(accessToken) {
-        options = { headers: {Authentication: `Bearer ${accessToken}`}}
+      let options = {};
+      if (accessToken) {
+        options = { headers: { Authentication: `Bearer ${accessToken}` } };
       }
       const response = await fetch(
         `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
           minDate
-        )}&perfType=blitz,rapid,classical&opening=true`,options
+        )}&perfType=blitz,rapid,classical&opening=true`,
+        options
       );
       if (!response.body) {
         return;
@@ -79,7 +89,7 @@ const AnalysisForm = () => {
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        let parsedGames = parse(value, { startRule: "games" });
+        let parsedGames = parse(value, { startRule: "games" }) as ParseTree[];
 
         for (let game of parsedGames) {
           setLoadedGames(loadedGames + 1);
@@ -92,24 +102,28 @@ const AnalysisForm = () => {
     }
   };
 
-  const streamLines = async (studyId) => {
+  const streamLines = async (studyId: string) => {
     try {
-      let options = {}
-      if(accessToken) {
-        options = { headers: {Authentication: `Bearer ${accessToken}`}}
+      let options = {};
+      if (accessToken) {
+        options = { headers: { Authentication: `Bearer ${accessToken}` } };
       }
-      console.log(options)
+      console.log(options);
       const response = await fetch(
-        `https://lichess.org/api/study/${studyId}.pgn`,options
+        `https://lichess.org/api/study/${studyId}.pgn`,
+        options
       );
-      let lines = [];
+      if (response.body == null) {
+        throw new Error("No Lines Found");
+      }
+      let lines: any[] = [];
       const reader = response.body
         .pipeThrough(new TextDecoderStream())
         .getReader();
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        let parsedLine = parse(value, { startRule: "games" });
+        let parsedLine = parse(value, { startRule: "games" }) as ParseTree[];
         for (let line of parsedLine) {
           recursiveParse([], line.moves, line.tags, lines);
         }
@@ -120,8 +134,17 @@ const AnalysisForm = () => {
     }
   };
 
-  const runAnalysis = async (games, lines) => {
-    let stats = {
+  const runAnalysis = async (
+    games: { [key: string]: any[] },
+    lines: { [key: string]: any[] }
+  ) => {
+
+    if(!games || !lines){
+      throw new Error("Missing Games or Lines");
+      return
+    }
+
+    let stats: StatsType = {
       gamesInRepertoire: 0,
       gamesNotInRepertoire: 0,
       wins: 0,
@@ -147,7 +170,7 @@ const AnalysisForm = () => {
         let wrongMove = "";
         let rightMove = "";
         let endOfBook = false;
-        for (let line of lines[id]) {
+        for (let line of lines[id] as any[]) {
           let matchingMoveCount = 0;
           for (const [index, bookMove] of line.moves.entries()) {
             if (
@@ -184,13 +207,16 @@ const AnalysisForm = () => {
           result,
           endOfBook,
         };
-        stats.games[id].push(gameStats);
+        if(!stats.games[id]){
+          stats.games[id] = []
+        }
+        stats.games[id]!.push(gameStats);
       }
     }
     return stats;
   };
 
-  const calculateResult = (result) => {
+  const calculateResult = (result:string) => {
     if (result == "1-0") {
       return colour == "white" ? "Win" : "Loss";
     }
@@ -200,20 +226,20 @@ const AnalysisForm = () => {
     return "Draw";
   };
 
-  const identifyLines = (linesInput) => {
-    let taggedLines = {};
+  const identifyLines = (linesInput:any[]) => {
+    let taggedLines:{[key: string]: any[]} = {};
     for (let line of linesInput) {
       if (line.moves.length <= minMoves) continue;
       let id = getLineId(line.moves);
       if (!Object.keys(taggedLines).includes(id)) {
         taggedLines[id] = [];
       }
-      taggedLines[id].push(line);
+      taggedLines[id]!.push(line);
     }
     return taggedLines;
   };
 
-  const getLineId = (moves) => {
+  const getLineId = (moves:any[]) => {
     let id = "";
     for (let i = 0; i < minMoves; i++) {
       id += moves[i].notation.notation;
@@ -221,7 +247,7 @@ const AnalysisForm = () => {
     return id;
   };
 
-  const recursiveParse = (lineSoFar, newMoves, tags, outputArray) => {
+  const recursiveParse = (lineSoFar:any, newMoves:any, tags:any, outputArray:any[]) => {
     setLoadedLines(loadedLines + 1);
 
     let lineArray = JSON.parse(JSON.stringify(lineSoFar)); // Deep Clone the array
@@ -263,7 +289,10 @@ const AnalysisForm = () => {
     </div>
   ) : status == "noGames" || status == "noLines" ? (
     <div>
-      <p>Unfortunately, no {status == "noGames" ? "games" : "lines"} found. Try a different {status == "noGames" ? "player or date range" : "study ID"}.</p>
+      <p>
+        Unfortunately, no {status == "noGames" ? "games" : "lines"} found. Try a
+        different {status == "noGames" ? "player or date range" : "study ID"}.
+      </p>
       <button
         onClick={reset}
         className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800"
@@ -374,7 +403,7 @@ const AnalysisForm = () => {
   );
 };
 
-const StatsDisplay = (props) => {
+const StatsDisplay = (props:any) => {
   let stats = props.stats;
   let colour = props.colour;
   let totalGames = stats.gamesInRepertoire + stats.gamesNotInRepertoire;
@@ -382,7 +411,7 @@ const StatsDisplay = (props) => {
   let drawPercent = percent(stats.draws, stats.gamesInRepertoire);
   let lossPercent = percent(stats.losses, stats.gamesInRepertoire);
 
-  const getDeviations = (games) => {
+  const getDeviations = (games:{[key: string]: any[]}) => {
     let endOfBook = 0;
     let playerDeviations = 0;
     let opponentDeviations = 0;
@@ -501,11 +530,10 @@ const StatsDisplay = (props) => {
   );
 };
 
-const Breakdown = (props) => {
-  let stats = props.stats;
+const Breakdown = (props:any) => {
+  let stats:StatsType = props.stats;
   let sideToShow = props.sideToShow;
   let colour = props.colour;
-
   return (
     <>
       <h2>{props.title}</h2>
@@ -542,7 +570,7 @@ const Breakdown = (props) => {
   );
 };
 
-function percent(number, of) {
+function percent(number:number, of:number) {
   return Math.round((number / of) * 100);
 }
 export default AnalysisForm;
