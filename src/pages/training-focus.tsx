@@ -14,7 +14,7 @@ const Home: NextPage = () => {
     <>
       <Head>
         <title>
-          Chess Tools - a collection of useful tools to improve your chess training
+          Training Focus - Where should you spend your training time?
         </title>
         <meta
           name="description"
@@ -23,8 +23,9 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <NavBar />
-      <section className="px-6 py-4 md:px-24 md:py-12 md:flex justify-between">
-        <h1 className="pb-6 text-4xl font-extrabold underline text-slate-800 dark:text-slate-200">Chess Tools</h1>
+      <section className="px-6 py-4 md:px-24 md:py-12">
+        <h1 className="pb-6 text-4xl font-extrabold underline text-slate-800 dark:text-slate-200">Training Focus</h1>
+        <p className="italic">Coming soon...</p>
       </section>
     </>
   );

@@ -29,13 +29,13 @@ const SignInButton = () => {
   return (
     validated ? <button
       onClick={logout}
-      className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 hover:bg-orange-500 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-orange-500"
+      className="rounded-xl bg-slate-800 px-4 py-2 md:text-xl font-bold text-slate-200 hover:bg-orange-500 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-orange-500"
     >
       Logout
     </button> :
     <button
       onClick={login}
-      className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 hover:bg-orange-500 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-orange-500"
+      className="rounded-xl bg-slate-800 px-4 py-2 md:text-xl font-bold text-slate-200 hover:bg-orange-500 dark:bg-slate-200 dark:text-slate-800 dark:hover:bg-orange-500"
     >
       LiChess Login
     </button>
