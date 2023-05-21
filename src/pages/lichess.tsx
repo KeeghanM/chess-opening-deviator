@@ -12,7 +12,7 @@ const LiChess: NextPage = () => {
 
       let codeVerifier = JSON.parse(localStorage.getItem("cv") as string);
       let state = JSON.parse(localStorage.getItem("st") as string);
-      const code = router.query["code"];
+      const code = router.query["code"] as string;
       const returnedState = router.query["state"];
       const error = router.query["error"];
 
@@ -22,24 +22,31 @@ const LiChess: NextPage = () => {
       }
 
       try {
+        const formData = new URLSearchParams();
+        formData.append("grant_type", "authorization_code");
+        formData.append("code", code);
+        formData.append("code_verifier", codeVerifier);
+        formData.append("redirect_uri", redirectUri);
+        formData.append("client_id", "openingDeviatOr.app");
+
         let options = {
           method: "POST",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-          body: JSON.stringify({
-            grant_type: "authorization_code",
-            code: code,
-            code_verifier: codeVerifier,
-            redirect_uri: redirectUri,
-            client_id: "openingDeviatOr.app",
-          }),
+          body: formData.toString(),
         };
         fetch(`https://lichess.org/api/token`, options)
           .then((response) => response.json())
           .then((data) => {
             localStorage.setItem("at", JSON.stringify(data.access_token));
-            router.push("/");
+            fetch("https://lichess.org/api/account", {
+              headers: { Authorization: `Bearer ${data.access_token}` },
+            }).then((res) => res.json())
+              .then((account) => {
+                localStorage.setItem("un", JSON.stringify(account.username));
+                router.push("/");
+              })
           });
       } catch (err: any) {
         setError(err.toString());

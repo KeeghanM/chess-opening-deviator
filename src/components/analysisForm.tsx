@@ -1,5 +1,5 @@
-import {  useEffect, useState } from "react";
-import {  parse } from "@mliebelt/pgn-parser";
+import { useEffect, useState } from "react";
+import { parse } from "@mliebelt/pgn-parser";
 import ECO from "../utils/eco";
 
 import type { FormEvent } from "react";
@@ -27,24 +27,32 @@ type StatsType = {
 
 const AnalysisForm = () => {
   const [accessToken, setAccessToken] = useState<any>();
+  const [status, setStatus] = useState("default");
+  const [stats, setStats] = useState<any>();
+  const [colourState, setColour] = useState("");
+  let colour = "";
+  const [loadedGames, setLoadedGames] = useState(0);
+  const [loadedLines, setLoadedLines] = useState(0);
+  const [analysedCount, setAnalysedCount] = useState(0);
+  const [signedInUsername, setSignedInUsername] = useState("");
+
   useEffect(() => {
     let access_token = localStorage.getItem("at") as string;
-    if (access_token != "undefined") setAccessToken(JSON.parse(access_token));
+    if (access_token != "undefined") {
+      let userName = localStorage.getItem("un") as string;
+      setAccessToken(JSON.parse(access_token));
+      setSignedInUsername(JSON.parse(userName));
+    }
   }, []);
-
-  const [status, setStatus] = useState<any>("default");
-  const [stats, setStats] = useState<any>();
-  const [colourState, setColour] = useState<any>("");
-  let colour = "";
-  const [loadedGames, setLoadedGames] = useState<any>(0);
-  const [loadedLines, setLoadedLines] = useState<any>(0);
-  const [analysedCount, setAnalysedCount] = useState<any>(0);
 
   let minMoves: number;
 
   const handleSubmit = async (event: FormEvent<CustomForm>) => {
     event.preventDefault();
     setStatus("loading");
+    setLoadedGames(0);
+    setLoadedLines(0);
+    setAnalysedCount(0);
     const target = event.currentTarget.elements;
     let username = target.username.value;
     let studyId = target.studyId.value;
@@ -72,7 +80,7 @@ const AnalysisForm = () => {
     try {
       let options = {};
       if (accessToken) {
-        options = { headers: { Authentication: `Bearer ${accessToken}` } };
+        options = { headers: { Authorization: `Bearer ${accessToken}` } };
       }
       const response = await fetch(
         `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
@@ -95,7 +103,7 @@ const AnalysisForm = () => {
         let parsedGames = parse(value, { startRule: "games" }) as ParseTree[];
 
         for (let game of parsedGames) {
-          setLoadedGames(loadedGames + 1);
+          setLoadedGames((prevLoadedGames) => prevLoadedGames + 1);
           games.push(game);
         }
       }
@@ -109,7 +117,7 @@ const AnalysisForm = () => {
     try {
       let options = {};
       if (accessToken) {
-        options = { headers: { Authentication: `Bearer ${accessToken}` } };
+        options = { headers: { Authorization: `Bearer ${accessToken}` } };
       }
       console.log(options);
       const response = await fetch(
@@ -157,7 +165,7 @@ const AnalysisForm = () => {
 
     for (let [id, gamesArray] of Object.entries(games)) {
       for (let game of gamesArray) {
-        setAnalysedCount(analysedCount + 1);
+        setAnalysedCount((prevAnalysed) => prevAnalysed + 1);
         if (!lines[id]) {
           stats.gamesNotInRepertoire++;
           continue;
@@ -255,7 +263,7 @@ const AnalysisForm = () => {
     tags: any,
     outputArray: any[]
   ) => {
-    setLoadedLines(loadedLines + 1);
+    setLoadedLines((prevLoadedLines) => prevLoadedLines + 1);
 
     let lineArray = JSON.parse(JSON.stringify(lineSoFar)); // Deep Clone the array
     for (let move of newMoves) {
@@ -302,7 +310,7 @@ const AnalysisForm = () => {
       </p>
       <button
         onClick={reset}
-        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800 mt-2"
+        className="mt-2 rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800"
       >
         Reset Form
       </button>
@@ -312,7 +320,7 @@ const AnalysisForm = () => {
       <form
         id="opening-form"
         onSubmit={handleSubmit}
-        className="flex w-full flex-col gap-4 md:w-[400px] p-4 bg-slate-100 dark:bg-slate-800 md:sticky md:top-[100px]"
+        className="flex w-full flex-col gap-4 bg-slate-100 p-4 dark:bg-slate-800 md:sticky md:top-[100px] md:w-[400px]"
       >
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
           <label htmlFor="username" className="font-bold">
@@ -324,6 +332,7 @@ const AnalysisForm = () => {
             name="username"
             required
             className="border border-orange-500 px-2  py-1 dark:bg-slate-500"
+            defaultValue={signedInUsername}
           />
         </fieldset>
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
@@ -514,7 +523,7 @@ const StatsDisplay = (props: any) => {
       />
       <button
         onClick={props.reset}
-        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800 mt-2 hover:bg-orange-500"
+        className="mt-2 rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 hover:bg-orange-500 dark:bg-slate-200 dark:text-slate-800"
       >
         Reset Form
       </button>
@@ -553,11 +562,16 @@ const Breakdown = (props: any) => {
           {gamesArray
             .reduce((accumulator: any[], game: any) => {
               const foundItem = accumulator.find((obj: any) => {
+                const isWin = obj.result === "Win" && game.result === "Win";
+                const isDrawOrLoss =
+                  ["Draw", "Loss"].includes(obj.result) &&
+                  ["Draw", "Loss"].includes(game.result);
+
                 return (
+                  (isWin || isDrawOrLoss) &&
                   obj.deviatingPlayer === game.deviatingPlayer &&
                   obj.endOfBook === game.endOfBook &&
                   obj.movesInBook === game.movesInBook &&
-                  obj.result === game.result &&
                   obj.rightMove === game.rightMove &&
                   obj.wrongMove === game.wrongMove
                 );
@@ -581,8 +595,13 @@ const Breakdown = (props: any) => {
               return a.rightMove - b.rightMove;
             })
             .map((game, i) => {
-              if (game.deviatingPlayer != sideToShow || game.endOfBook)
+              if (
+                game.deviatingPlayer != sideToShow ||
+                game.endOfBook ||
+                (sideToShow == "Opponent" && game.result == "Win")
+              )
                 return <></>;
+
               let ellipses = "";
               if (sideToShow == "Player") {
                 ellipses = colour == "white" ? ". " : "... ";
