@@ -1,15 +1,21 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AnalysisForm from "~/components/analysisForm";
 import NavBar from "~/components/navbar";
 
 const OpeningDeviations: NextPage = () => {
   const [validated, setValidated] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let access_token = localStorage.getItem("at");
     if (access_token) setValidated(true);
   }, []);
+
+  const scrollToForm = () => {
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <>
       <Head>
@@ -28,13 +34,19 @@ const OpeningDeviations: NextPage = () => {
         <h1 className="pb-2 text-4xl font-extrabold text-slate-800 underline dark:text-slate-200">
           Chess Opening Deviation Analysis
         </h1>
-        <p className="pb-6 md:max-w-[50vw]">
+        <p className="md:mb-4 md:max-w-[50vw]">
           Level up your chess skills with our powerful tool that compares your
           games against your opening repertoires. Discover and pinpoint specific
           areas for improvement, while receiving personalized advice to enhance
           your openings. Take your chess game to new heights with our
           specialized training and learning resources.
         </p>
+        <button
+          className="my-4 rounded-xl bg-orange-500 px-2 py-2 text-xl font-bold text-slate-800 md:hidden"
+          onClick={scrollToForm}
+        >
+          Let's go!
+        </button>
         <div className="md:flex md:gap-24 ">
           <aside className="md:max-w-[30vw]">
             <h2 className="mb-2 text-2xl font-bold">Instructions to use</h2>
@@ -50,11 +62,9 @@ const OpeningDeviations: NextPage = () => {
                 <h3 className="font-bold">2. Enter LiChess Study ID</h3>
                 <p className="pl-6">
                   This can be found by looking at the URL while the study is
-                  open. For example, the study{" "}
-                  <a href="https://lichess.org/study/z5agyGou" target="_blank">
-                    https://lichess.org/study/z5agyGou
-                  </a>{" "}
-                  has the id of "z5agyGou". Feel free to try it out.
+                  open. For example, the study
+                  https://lichess.org/study/z5agyGou has the id of "z5agyGou".
+                  Feel free to try it out.
                 </p>
               </li>
               <li className="mb-4">
@@ -91,7 +101,7 @@ const OpeningDeviations: NextPage = () => {
               </li>
             </ul>
           </aside>
-          <main>
+          <main ref={formRef}>
             <AnalysisForm />
             {!validated ? (
               <p className="italic">

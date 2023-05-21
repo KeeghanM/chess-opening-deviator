@@ -40,9 +40,13 @@ const Home: NextPage = () => {
           </li>
           <li className="hover:bg-slate-100 dark:hover:bg-slate-800 p-4 mb-4">
             <Link href="/training-focus">
+              <div className="flex items-center gap-4">
+
               <h2 className="text-xl font-bold text-orange-500">
                 Training Focus
               </h2>
+              <p className="italic">Coming Soon...</p>
+              </div>
               <p className="mt-2">
                 Optimize your chess training with Training Focus, an advanced
                 tool designed to analyze your recent losses and identify key
