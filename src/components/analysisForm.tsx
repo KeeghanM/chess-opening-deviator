@@ -312,7 +312,7 @@ const AnalysisForm = () => {
       <form
         id="opening-form"
         onSubmit={handleSubmit}
-        className="flex w-full flex-col gap-4 md:w-[400px]"
+        className="flex w-full flex-col gap-4 md:w-[400px] p-4 bg-slate-100 dark:bg-slate-800 md:sticky md:top-[100px]"
       >
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
           <label htmlFor="username" className="font-bold">
