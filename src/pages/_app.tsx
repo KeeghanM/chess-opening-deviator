@@ -1,18 +1,13 @@
-import { type AppType } from "next/app";
-
-import { api } from "~/utils/api";
+import { type AppProps  } from "next/app";
 import { ThemeProvider } from "next-themes";
-
-import { useTheme } from "next-themes";
 
 import "~/styles/globals.css";
 
-const MyApp: AppType = ({ Component, pageProps }) => {
+export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider attribute="class">
-        <Component {...pageProps} />
+      <Component {...pageProps} />
     </ThemeProvider>
   );
 };
 
-export default api.withTRPC(MyApp);

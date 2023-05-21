@@ -1,15 +1,8 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useEffect, useState } from "react";
-import AnalysisForm from "~/components/analysisForm";
 import NavBar from "~/components/navbar";
 
 const Home: NextPage = () => {
-  const [validated,setValidated] = useState(false)
-  useEffect(()=>{
-    let access_token = localStorage.getItem('at')
-    if(access_token) setValidated(true)
-  },[])
   return (
     <>
       <Head>

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import AnalysisForm from "~/components/analysisForm";
 import NavBar from "~/components/navbar";
 
-const Home: NextPage = () => {
+const OpeningDeviations: NextPage = () => {
   const [validated, setValidated] = useState(false);
   useEffect(() => {
     let access_token = localStorage.getItem("at");
@@ -102,4 +102,4 @@ const Home: NextPage = () => {
   );
 };
 
-export default Home;
+export default OpeningDeviations;
