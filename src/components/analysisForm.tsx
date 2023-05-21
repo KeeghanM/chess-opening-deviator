@@ -41,7 +41,7 @@ const AnalysisForm = () => {
     if (access_token != "undefined") {
       let userName = localStorage.getItem("un") as string;
       setAccessToken(JSON.parse(access_token));
-      setSignedInUsername(JSON.parse(userName))
+      setSignedInUsername(JSON.parse(userName));
     }
   }, []);
 
@@ -562,11 +562,16 @@ const Breakdown = (props: any) => {
           {gamesArray
             .reduce((accumulator: any[], game: any) => {
               const foundItem = accumulator.find((obj: any) => {
+                const isWin = obj.result === "Win" && game.result === "Win";
+                const isDrawOrLoss =
+                  ["Draw", "Loss"].includes(obj.result) &&
+                  ["Draw", "Loss"].includes(game.result);
+
                 return (
+                  (isWin || isDrawOrLoss) &&
                   obj.deviatingPlayer === game.deviatingPlayer &&
                   obj.endOfBook === game.endOfBook &&
                   obj.movesInBook === game.movesInBook &&
-                  obj.result === game.result &&
                   obj.rightMove === game.rightMove &&
                   obj.wrongMove === game.wrongMove
                 );
@@ -590,8 +595,13 @@ const Breakdown = (props: any) => {
               return a.rightMove - b.rightMove;
             })
             .map((game, i) => {
-              if (game.deviatingPlayer != sideToShow || game.endOfBook)
+              if (
+                game.deviatingPlayer != sideToShow ||
+                game.endOfBook ||
+                (sideToShow == "Opponent" && game.result == "Win")
+              )
                 return <></>;
+
               let ellipses = "";
               if (sideToShow == "Player") {
                 ellipses = colour == "white" ? ". " : "... ";
