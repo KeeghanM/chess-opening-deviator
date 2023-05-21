@@ -1,5 +1,5 @@
-import {  useEffect, useState } from "react";
-import {  parse } from "@mliebelt/pgn-parser";
+import { useEffect, useState } from "react";
+import { parse } from "@mliebelt/pgn-parser";
 import ECO from "../utils/eco";
 
 import type { FormEvent } from "react";
@@ -32,19 +32,22 @@ const AnalysisForm = () => {
     if (access_token != "undefined") setAccessToken(JSON.parse(access_token));
   }, []);
 
-  const [status, setStatus] = useState<any>("default");
+  const [status, setStatus] = useState("default");
   const [stats, setStats] = useState<any>();
-  const [colourState, setColour] = useState<any>("");
+  const [colourState, setColour] = useState("");
   let colour = "";
-  const [loadedGames, setLoadedGames] = useState<any>(0);
-  const [loadedLines, setLoadedLines] = useState<any>(0);
-  const [analysedCount, setAnalysedCount] = useState<any>(0);
+  const [loadedGames, setLoadedGames] = useState(0);
+  const [loadedLines, setLoadedLines] = useState(0);
+  const [analysedCount, setAnalysedCount] = useState(0);
 
   let minMoves: number;
 
   const handleSubmit = async (event: FormEvent<CustomForm>) => {
     event.preventDefault();
     setStatus("loading");
+    setLoadedGames(0)
+    setLoadedLines(0)
+    setAnalysedCount(0)
     const target = event.currentTarget.elements;
     let username = target.username.value;
     let studyId = target.studyId.value;
@@ -95,7 +98,7 @@ const AnalysisForm = () => {
         let parsedGames = parse(value, { startRule: "games" }) as ParseTree[];
 
         for (let game of parsedGames) {
-          setLoadedGames(loadedGames + 1);
+          setLoadedGames((prevLoadedGames) => prevLoadedGames + 1);
           games.push(game);
         }
       }
@@ -157,7 +160,7 @@ const AnalysisForm = () => {
 
     for (let [id, gamesArray] of Object.entries(games)) {
       for (let game of gamesArray) {
-        setAnalysedCount(analysedCount + 1);
+        setAnalysedCount((prevAnalysed) => prevAnalysed + 1);
         if (!lines[id]) {
           stats.gamesNotInRepertoire++;
           continue;
@@ -255,7 +258,7 @@ const AnalysisForm = () => {
     tags: any,
     outputArray: any[]
   ) => {
-    setLoadedLines(loadedLines + 1);
+    setLoadedLines((prevLoadedLines) => prevLoadedLines + 1);
 
     let lineArray = JSON.parse(JSON.stringify(lineSoFar)); // Deep Clone the array
     for (let move of newMoves) {
@@ -302,7 +305,7 @@ const AnalysisForm = () => {
       </p>
       <button
         onClick={reset}
-        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800 mt-2"
+        className="mt-2 rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800"
       >
         Reset Form
       </button>
@@ -312,7 +315,7 @@ const AnalysisForm = () => {
       <form
         id="opening-form"
         onSubmit={handleSubmit}
-        className="flex w-full flex-col gap-4 md:w-[400px] p-4 bg-slate-100 dark:bg-slate-800 md:sticky md:top-[100px]"
+        className="flex w-full flex-col gap-4 bg-slate-100 p-4 dark:bg-slate-800 md:sticky md:top-[100px] md:w-[400px]"
       >
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">
           <label htmlFor="username" className="font-bold">
@@ -514,7 +517,7 @@ const StatsDisplay = (props: any) => {
       />
       <button
         onClick={props.reset}
-        className="rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 dark:bg-slate-200 dark:text-slate-800 mt-2 hover:bg-orange-500"
+        className="mt-2 rounded-xl bg-slate-800 px-4 py-2 text-xl font-bold text-slate-200 hover:bg-orange-500 dark:bg-slate-200 dark:text-slate-800"
       >
         Reset Form
       </button>
