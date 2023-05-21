@@ -25,9 +25,16 @@ const OpeningDeviations: NextPage = () => {
       <NavBar />
 
       <section className="px-6 py-4 md:px-24 md:py-12">
-        <h1 className="pb-6 text-4xl font-extrabold text-slate-800 underline dark:text-slate-200">
+        <h1 className="pb-2 text-4xl font-extrabold text-slate-800 underline dark:text-slate-200">
           Chess Opening Deviation Analysis
         </h1>
+        <p className="pb-6 md:max-w-[50vw]">
+          Level up your chess skills with our powerful tool that compares your
+          games against your opening repertoires. Discover and pinpoint specific
+          areas for improvement, while receiving personalized advice to enhance
+          your openings. Take your chess game to new heights with our
+          specialized training and learning resources.
+        </p>
         <div className="md:flex md:gap-24 ">
           <aside className="md:max-w-[30vw]">
             <h2 className="mb-2 text-2xl font-bold">Instructions to use</h2>
