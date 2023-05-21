@@ -1,4 +1,4 @@
-const ECO = {
+const ECO:{[key: string]: string} = {
     "e4nf6": "Alekhine Defense",
     "e4nf6e5nd5d4": "Alekhine Defense, 2. e5 Nd5 3. d4",
     "e4nf6e5nd5d4d6": "Alekhine Defense, 2. e5 Nd5 3. d4 d6",
@@ -3414,3 +3414,5 @@ const ECO = {
     "d4d6nf3bg4c4nd7qb3rb8": "Zukertort Opening: Wade Defense, Chigorin Plan",
     "nf3a5": "Zukertort Opening: Ware Defense"
 }
+
+export default ECO
