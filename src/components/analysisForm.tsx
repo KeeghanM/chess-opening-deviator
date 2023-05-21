@@ -27,11 +27,6 @@ type StatsType = {
 
 const AnalysisForm = () => {
   const [accessToken, setAccessToken] = useState<any>();
-  useEffect(() => {
-    let access_token = localStorage.getItem("at") as string;
-    if (access_token != "undefined") setAccessToken(JSON.parse(access_token));
-  }, []);
-
   const [status, setStatus] = useState("default");
   const [stats, setStats] = useState<any>();
   const [colourState, setColour] = useState("");
@@ -39,15 +34,23 @@ const AnalysisForm = () => {
   const [loadedGames, setLoadedGames] = useState(0);
   const [loadedLines, setLoadedLines] = useState(0);
   const [analysedCount, setAnalysedCount] = useState(0);
+  const [signedInUsername, setSignedInUsername] = useState("");
+
+  useEffect(() => {
+    let access_token = localStorage.getItem("at") as string;
+    if (access_token != "undefined") {
+      setAccessToken(JSON.parse(access_token));
+    }
+  }, []);
 
   let minMoves: number;
 
   const handleSubmit = async (event: FormEvent<CustomForm>) => {
     event.preventDefault();
     setStatus("loading");
-    setLoadedGames(0)
-    setLoadedLines(0)
-    setAnalysedCount(0)
+    setLoadedGames(0);
+    setLoadedLines(0);
+    setAnalysedCount(0);
     const target = event.currentTarget.elements;
     let username = target.username.value;
     let studyId = target.studyId.value;
