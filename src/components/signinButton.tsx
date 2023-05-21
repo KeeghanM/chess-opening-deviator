@@ -47,6 +47,7 @@ const SignInButton = () => {
     localStorage.removeItem("at");
     localStorage.removeItem("st");
     localStorage.removeItem("cv");
+    localStorage.removeItem("un");
     setValidated(false);
   };
 

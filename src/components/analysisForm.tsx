@@ -39,7 +39,9 @@ const AnalysisForm = () => {
   useEffect(() => {
     let access_token = localStorage.getItem("at") as string;
     if (access_token != "undefined") {
+      let userName = localStorage.getItem("un") as string;
       setAccessToken(JSON.parse(access_token));
+      setSignedInUsername(JSON.parse(userName))
     }
   }, []);
 
@@ -78,7 +80,7 @@ const AnalysisForm = () => {
     try {
       let options = {};
       if (accessToken) {
-        options = { headers: { Authentication: `Bearer ${accessToken}` } };
+        options = { headers: { Authorization: `Bearer ${accessToken}` } };
       }
       const response = await fetch(
         `https://lichess.org/api/games/user/${username}?moves=true&color=${colour}&since=${Date.parse(
@@ -115,7 +117,7 @@ const AnalysisForm = () => {
     try {
       let options = {};
       if (accessToken) {
-        options = { headers: { Authentication: `Bearer ${accessToken}` } };
+        options = { headers: { Authorization: `Bearer ${accessToken}` } };
       }
       console.log(options);
       const response = await fetch(
@@ -330,6 +332,7 @@ const AnalysisForm = () => {
             name="username"
             required
             className="border border-orange-500 px-2  py-1 dark:bg-slate-500"
+            defaultValue={signedInUsername}
           />
         </fieldset>
         <fieldset className="flex flex-col justify-between md:flex-row md:items-center">

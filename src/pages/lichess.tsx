@@ -41,10 +41,10 @@ const LiChess: NextPage = () => {
           .then((data) => {
             localStorage.setItem("at", JSON.stringify(data.access_token));
             fetch("https://lichess.org/api/account", {
-              headers: { Authentication: `Bearer ${data.access_token}` },
+              headers: { Authorization: `Bearer ${data.access_token}` },
             }).then((res) => res.json())
               .then((account) => {
-                console.log(account);
+                localStorage.setItem("un", JSON.stringify(account.username));
                 router.push("/");
               })
           });
